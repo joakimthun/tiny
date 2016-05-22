@@ -146,7 +146,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lexer.cpp" />
     <ClCompile Include="tiny.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lexer.h" />
+    <ClInclude Include="tiny_exception.h" />
+    <ClInclude Include="token.h" />
+    <ClInclude Include="type.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
