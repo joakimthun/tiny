@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-enum Token : u16
+enum TokenType : u16
 {
 	Eof,
 	Plus,
@@ -12,4 +12,13 @@ enum Token : u16
 	Divide,
 	LParen,
 	RParen
+};
+
+struct Token
+{
+	Token::Token(TokenType token_type, const std::string& token_value) : type(token_type), value(token_value) {}
+	Token::Token(TokenType token_type) : type(token_type) {}
+
+	TokenType type;
+	std::string value;
 };

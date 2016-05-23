@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tiny", "tiny.vcxproj", "{BC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test_files", "test_files", "{C18D3FAB-C631-40F9-9676-04A7AE16CE3D}"
 	ProjectSection(SolutionItems) = preProject
-		..\test_files\test.tiny = ..\test_files\test.tiny
+		test_files\test.tiny = test_files\test.tiny
 	EndProjectSection
 EndProject
 Global

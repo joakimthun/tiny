@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "lexer.h"
 
@@ -6,6 +7,12 @@ using namespace tiny;
 
 int main(int argc, char* argv[])
 {
-	auto str = "";
-	auto l = Lexer(std::string());
+	auto l = std::make_unique<Lexer>("test_files/test.tiny");
+
+	auto t = l->next();
+	while(t->type != Eof)
+	{
+		std::cout << t->value << std::endl;
+		t = l->next();
+	}
 }

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <string>
+#include <memory>
 
 #include "type.h"
 #include "token.h"
@@ -13,12 +14,15 @@ namespace tiny {
 	public:
 		Lexer(const std::string& path);
 		~Lexer();
-		Token next_token();
+		std::unique_ptr<Token> next();
 
 	private:
-		char next_char();
+		void consume();
+		void new_line();
+		std::unique_ptr<Token> create(TokenType type, const std::string& value);
 
 		std::ifstream file_;
+		char current_;
 		u32 line_number_;
 		u32 column_;
 	};

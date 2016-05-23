@@ -5,6 +5,12 @@ namespace tiny {
 
 	Lexer::Lexer(const std::string& path) : file_(path), line_number_(0), column_(0)
 	{
+		if (!file_.good())
+		{
+			throw TinyException("Could not open source file: %s", path.c_str());
+		}
+
+		consume();
 	}
 
 	Lexer::~Lexer()
@@ -13,42 +19,68 @@ namespace tiny {
 			file_.close();
 	}
 
-	Token Lexer::next_token()
+	std::unique_ptr<Token> Lexer::next()
 	{
-		const auto c = next_char();
-
-		if (c == 0)
-			return Token::Eof;
-
-		switch (c)
+		while (current_ != -1)
 		{
-		case '+':
-			return Token::Plus;
-		case '-':
-			return Token::Minus;
-		case '=':
-			return Token::Assign;
-		case '*':
-			return Token::Times;
-		case '/':
-			return Token::Divide;
-		case '(':
-			return Token::LParen;
-		case ')':
-			return Token::RParen;
+			if(current_ == '\n')
+			{
+				new_line();
+				continue;
+			}
+
+			if(isspace(current_))
+			{
+				consume();
+				continue;
+			}
+
+			switch (current_)
+			{
+			case '+':
+				return create(Plus, "+");
+			case '-':
+				return create(Minus, "-");
+			case '=':
+				return create(Assign, "=");
+			case '*':
+				return create(Times, "*");
+			case '/':
+				return create(Divide, "/");
+			case '(':
+				return create(LParen, "(");
+			case ')':
+				return create(RParen, ")");
+			}
+
+			throw TinyException("Unrecognised token Line: %d Column: %d", line_number_, column_);
 		}
 
-		throw TinyException("Unrecognised token Line: %d Column: %d", line_number_, column_);
+		return create(Eof, "");
 	}
 
-	char Lexer::next_char()
+	void Lexer::consume()
 	{
-		if (file_.is_open() && file_.good())
+		if (!file_.eof())
 		{
 			column_++;
-			return file_.get();
+			current_ = file_.get();
+			return;
 		}
 
-		return 0;
+		current_ = -1;
+	}
+
+	void Lexer::new_line()
+	{
+		column_ = 0;
+		line_number_++;
+		consume();
+	}
+
+	std::unique_ptr<Token> Lexer::create(TokenType type, const std::string& value)
+	{
+		consume();
+		return std::make_unique<Token>(type, value);
 	}
 }
