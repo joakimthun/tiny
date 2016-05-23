@@ -3,7 +3,7 @@
 
 namespace tiny {
 
-	Lexer::Lexer(const std::string& path) : file_(path), line_number_(0), column_(0)
+	Lexer::Lexer(const std::string& path) : path_(path), file_(path), line_number_(1), column_(0)
 	{
 		if (!file_.good())
 		{
@@ -11,6 +11,7 @@ namespace tiny {
 		}
 
 		consume();
+		init_keywords();
 	}
 
 	Lexer::~Lexer()
@@ -33,6 +34,11 @@ namespace tiny {
 			{
 				consume();
 				continue;
+			}
+
+			if (isalpha(current_))
+			{
+				return alpha();
 			}
 
 			switch (current_)
@@ -59,6 +65,25 @@ namespace tiny {
 		return create(Eof, "");
 	}
 
+	std::unique_ptr<Token> Lexer::alpha()
+	{
+		std::string value;
+		u32 start = column_;
+		u32 end = column_;
+		while (current_ != -1 && (isalnum(current_) || current_ == L'_'))
+		{
+			value += current_;
+			end++;
+			consume();
+		}
+
+		auto t = match_keyword(value, start, end);
+		if (t != nullptr)
+			return t;
+
+		return std::make_unique<Token>(Id, value, path_, line_number_, start, end);
+	}
+
 	void Lexer::consume()
 	{
 		if (!file_.eof())
@@ -80,7 +105,34 @@ namespace tiny {
 
 	std::unique_ptr<Token> Lexer::create(TokenType type, const std::string& value)
 	{
+		return create(type, value, column_, column_);
+	}
+
+	std::unique_ptr<Token> Lexer::create(TokenType type, const std::string& value, u32 start_col, u32 end_col)
+	{
 		consume();
-		return std::make_unique<Token>(type, value);
+		return std::make_unique<Token>(type, value, path_, line_number_, start_col, end_col);
+	}
+
+	std::unique_ptr<Token> Lexer::match_keyword(const std::string& value, u32 start_col, u32 end_col)
+	{
+		auto it = keywords_.find(value);
+		if (it != keywords_.end())
+		{
+			const auto& t = it->second;
+			return std::make_unique<Token>(t->type, value, path_, line_number_, start_col, end_col);
+		}
+
+		return nullptr;
+	}
+
+	void Lexer::register_keyword(const std::string keyword, TokenType type)
+	{
+		keywords_.insert(std::pair<std::string, std::unique_ptr<Token>>(keyword, std::make_unique<Token>(type, keyword, path_, line_number_, 0, 0)));
+	}
+
+	void Lexer::init_keywords()
+	{
+		register_keyword("fn", Fn);
 	}
 }

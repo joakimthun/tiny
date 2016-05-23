@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 	auto t = l->next();
 	while(t->type != Eof)
 	{
-		std::cout << t->value << std::endl;
+		std::cout << "Value: " << t->value << " Line: " << t->line_number << " Start: " << t->start_column << " End: " << t->end_column << std::endl;
 		t = l->next();
 	}
 }
