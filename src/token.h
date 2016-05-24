@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-enum TokenType : u16
+enum class TokenType : u16
 {
 	Eof,
 	Plus,

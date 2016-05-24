@@ -6,4 +6,9 @@ namespace tiny {
 	{
 		
 	}
+
+	std::unique_ptr<AST> Parser::parse()
+	{
+		return std::make_unique<AST>();
+	}
 }

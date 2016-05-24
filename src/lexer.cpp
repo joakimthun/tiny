@@ -56,34 +56,34 @@ namespace tiny {
 			switch (current_)
 			{
 			case '+':
-				return create(Plus, "+");
+				return create(TokenType::Plus, "+");
 			case '-': {
-				auto t = try_match_tokens('-', '>', RArrow);
+				auto t = try_match_tokens('-', '>', TokenType::RArrow);
 				if (t != nullptr)
 					return t;
 
-				return create(Minus, "-");
+				return create(TokenType::Minus, "-");
 			}
 			case '=':
-				return create(Assign, "=");
+				return create(TokenType::Assign, "=");
 			case '*':
-				return create(Times, "*");
+				return create(TokenType::Times, "*");
 			case '/':
-				return create(Divide, "/");
+				return create(TokenType::Divide, "/");
 			case '(':
-				return create(LParen, "(");
+				return create(TokenType::LParen, "(");
 			case ')':
-				return create(RParen, ")");
+				return create(TokenType::RParen, ")");
 			case '{':
-				return create(LBracket, "{");
+				return create(TokenType::LBracket, "{");
 			case '}':
-				return create(RBracket, "}");
+				return create(TokenType::RBracket, "}");
 			case '[':
-				return create(LSBracket, "[");
+				return create(TokenType::LSBracket, "[");
 			case ']':
-				return create(RSBracket, "]");
+				return create(TokenType::RSBracket, "]");
 			case ':': {
-				auto t = try_match_tokens(':', '=', ShortDec);
+				auto t = try_match_tokens(':', '=', TokenType::ShortDec);
 				if (t != nullptr)
 					return t;
 			}
@@ -92,7 +92,7 @@ namespace tiny {
 			throw TinyException("Unrecognised token, Line: %d Column: %d", line_number_, column_);
 		}
 
-		return create(Eof, "");
+		return create(TokenType::Eof, "");
 	}
 
 	const Token* Lexer::peek()
@@ -115,7 +115,7 @@ namespace tiny {
 		if (t != nullptr)
 			return t;
 
-		return std::make_unique<Token>(Id, value, path_, line_number_, start, start + (value.size() - 1));
+		return std::make_unique<Token>(TokenType::Id, value, path_, line_number_, start, start + (value.size() - 1));
 	}
 
 	std::unique_ptr<Token> Lexer::digit()
@@ -129,7 +129,7 @@ namespace tiny {
 			consume();
 		}
 
-		return std::make_unique<Token>(IntLiteral, value, path_, line_number_, start, start + (value.size() - 1));
+		return std::make_unique<Token>(TokenType::IntLiteral, value, path_, line_number_, start, start + (value.size() - 1));
 	}
 
 	std::unique_ptr<Token> Lexer::try_match_tokens(char first, char second, TokenType type)
@@ -207,9 +207,9 @@ namespace tiny {
 
 	void Lexer::init_keywords()
 	{
-		register_keyword("fn", Fn);
+		register_keyword("fn", TokenType::Fn);
 
 		// Types
-		register_keyword("i32", Fn);
+		register_keyword("i32", TokenType::Fn);
 	}
 }
