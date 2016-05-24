@@ -9,13 +9,19 @@ enum TokenType : u16
 	Minus,
 	Assign,
 	Times,
+	RArrow,
 	Divide,
 	LParen,
 	RParen,
 	Fn,
 	Id,
-	Int32,
-	ShortDec
+	IntLiteral,
+	ShortDec,
+	LBracket,
+	RBracket,
+	LSBracket,
+	RSBracket,
+	I32
 };
 
 struct Token

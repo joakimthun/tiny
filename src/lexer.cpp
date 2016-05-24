@@ -22,6 +22,13 @@ namespace tiny {
 
 	std::unique_ptr<Token> Lexer::next()
 	{
+		if (!buffer_.empty())
+		{
+			auto next = std::move(buffer_.front());
+			buffer_.pop();
+			return next;
+		}
+
 		while (current_ != -1)
 		{
 			if(current_ == '\n')
@@ -41,12 +48,22 @@ namespace tiny {
 				return alpha();
 			}
 
+			if (isdigit(current_))
+			{
+				return digit();
+			}
+
 			switch (current_)
 			{
 			case '+':
 				return create(Plus, "+");
-			case '-':
+			case '-': {
+				auto t = try_match_tokens('-', '>', RArrow);
+				if (t != nullptr)
+					return t;
+
 				return create(Minus, "-");
+			}
 			case '=':
 				return create(Assign, "=");
 			case '*':
@@ -57,31 +74,78 @@ namespace tiny {
 				return create(LParen, "(");
 			case ')':
 				return create(RParen, ")");
+			case '{':
+				return create(LBracket, "{");
+			case '}':
+				return create(RBracket, "}");
+			case '[':
+				return create(LSBracket, "[");
+			case ']':
+				return create(RSBracket, "]");
+			case ':': {
+				auto t = try_match_tokens(':', '=', ShortDec);
+				if (t != nullptr)
+					return t;
+			}
 			}
 
-			throw TinyException("Unrecognised token Line: %d Column: %d", line_number_, column_);
+			throw TinyException("Unrecognised token, Line: %d Column: %d", line_number_, column_);
 		}
 
 		return create(Eof, "");
+	}
+
+	const Token* Lexer::peek()
+	{
+		buffer_.push(next());
+		return buffer_.back().get();
 	}
 
 	std::unique_ptr<Token> Lexer::alpha()
 	{
 		std::string value;
 		u32 start = column_;
-		u32 end = column_;
 		while (current_ != -1 && (isalnum(current_) || current_ == L'_'))
 		{
 			value += current_;
-			end++;
 			consume();
 		}
 
-		auto t = match_keyword(value, start, end);
+		auto t = match_keyword(value, start, start + (value.size() - 1));
 		if (t != nullptr)
 			return t;
 
-		return std::make_unique<Token>(Id, value, path_, line_number_, start, end);
+		return std::make_unique<Token>(Id, value, path_, line_number_, start, start + (value.size() - 1));
+	}
+
+	std::unique_ptr<Token> Lexer::digit()
+	{
+		std::string value;
+		u32 start = column_;
+
+		while (current_ != -1 && isdigit(current_))
+		{
+			value += current_;
+			consume();
+		}
+
+		return std::make_unique<Token>(IntLiteral, value, path_, line_number_, start, start + (value.size() - 1));
+	}
+
+	std::unique_ptr<Token> Lexer::try_match_tokens(char first, char second, TokenType type)
+	{
+		if (current_ == first && peek_char() == second)
+		{
+			u32 start = column_;
+			std::string value;
+			value += current_;
+			consume();
+			value += current_;
+
+			return create(type, value, start, start + 1);
+		}
+
+		return nullptr;
 	}
 
 	void Lexer::consume()
@@ -94,6 +158,16 @@ namespace tiny {
 		}
 
 		current_ = -1;
+	}
+
+	char Lexer::peek_char()
+	{
+		if (!file_.eof())
+		{
+			return file_.peek();
+		}
+
+		return -1;
 	}
 
 	void Lexer::new_line()
@@ -134,5 +208,8 @@ namespace tiny {
 	void Lexer::init_keywords()
 	{
 		register_keyword("fn", Fn);
+
+		// Types
+		register_keyword("i32", Fn);
 	}
 }
