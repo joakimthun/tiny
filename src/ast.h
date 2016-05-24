@@ -11,7 +11,10 @@ class ASTVisitor;
 enum class NodeType : u16
 {
 	FnDeclaration,
-	VarDeclaration
+	VarDeclaration,
+	IntLiteral,
+	BinaryOperator,
+	Identifier,
 };
 
 struct ASTNode
@@ -55,6 +58,48 @@ struct VarDeclaration : ASTNode
 	NodeType node_type() override
 	{
 		return NodeType::VarDeclaration;
+	}
+
+	void accept(ASTVisitor* visitor) override {}
+};
+
+struct BinaryOperator : ASTNode
+{
+	TokenType op;
+	std::unique_ptr<ASTNode> left;
+	std::unique_ptr<ASTNode> right;
+
+	NodeType node_type() override
+	{
+		return NodeType::BinaryOperator;
+	}
+
+	void accept(ASTVisitor* visitor) override {}
+};
+
+struct Identifier : ASTNode
+{
+	Identifier(const std::string& n) : name(n) {}
+
+	std::string name;
+
+	NodeType node_type() override
+	{
+		return NodeType::Identifier;
+	}
+
+	void accept(ASTVisitor* visitor) override {}
+};
+
+struct IntLiteral : ASTNode
+{
+	IntLiteral(i32 v) : value(v) {}
+
+	i32 value;
+
+	NodeType node_type() override
+	{
+		return NodeType::IntLiteral;
 	}
 
 	void accept(ASTVisitor* visitor) override {}
