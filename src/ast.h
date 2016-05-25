@@ -6,101 +6,105 @@
 
 #include "type.h"
 
-class ASTVisitor;
+namespace tiny {
 
-enum class NodeType : u16
-{
-	FnDeclaration,
-	VarDeclaration,
-	IntLiteral,
-	BinaryOperator,
-	Identifier,
-};
+	class ASTVisitor;
 
-struct ASTNode
-{
-	virtual ~ASTNode()
+	enum class NodeType : u16
 	{
-	}
+		FnDeclaration,
+		VarDeclaration,
+		IntLiteral,
+		BinaryOperator,
+		Identifier,
+	};
 
-	virtual NodeType node_type() = 0;
-	virtual void accept(ASTVisitor* visitor) = 0;
-};
-
-struct AST
-{
-	std::vector<std::unique_ptr<ASTNode>> nodes;
-};
-
-struct FnDeclaration : ASTNode
-{
-	FnDeclaration() : entry_point(false) {}
-
-	std::string name;
-	bool entry_point;
-	std::vector<Type> return_types;
-	std::vector<std::unique_ptr<ASTNode>> body;
-
-	NodeType node_type() override
+	struct ASTNode
 	{
-		return NodeType::FnDeclaration;
-	}
+		virtual ~ASTNode()
+		{
+		}
 
-	void accept(ASTVisitor* visitor) override {}
-};
+		virtual NodeType node_type() = 0;
+		virtual void accept(ASTVisitor* visitor) = 0;
+	};
 
-struct VarDeclaration : ASTNode
-{
-	std::string name;
-	Type type;
-	std::unique_ptr<ASTNode> expression;
-
-	NodeType node_type() override
+	struct AST
 	{
-		return NodeType::VarDeclaration;
-	}
+		std::vector<std::unique_ptr<ASTNode>> nodes;
+	};
 
-	void accept(ASTVisitor* visitor) override {}
-};
-
-struct BinaryOperator : ASTNode
-{
-	TokenType op;
-	std::unique_ptr<ASTNode> left;
-	std::unique_ptr<ASTNode> right;
-
-	NodeType node_type() override
+	struct FnDeclaration : ASTNode
 	{
-		return NodeType::BinaryOperator;
-	}
+		FnDeclaration() : entry_point(false) {}
 
-	void accept(ASTVisitor* visitor) override {}
-};
+		std::string name;
+		bool entry_point;
+		std::vector<Type> return_types;
+		std::vector<std::unique_ptr<ASTNode>> body;
 
-struct Identifier : ASTNode
-{
-	Identifier(const std::string& n) : name(n) {}
+		NodeType node_type() override
+		{
+			return NodeType::FnDeclaration;
+		}
 
-	std::string name;
+		void accept(ASTVisitor* visitor) override {}
+	};
 
-	NodeType node_type() override
+	struct VarDeclaration : ASTNode
 	{
-		return NodeType::Identifier;
-	}
+		std::string name;
+		Type type;
+		std::unique_ptr<ASTNode> expression;
 
-	void accept(ASTVisitor* visitor) override {}
-};
+		NodeType node_type() override
+		{
+			return NodeType::VarDeclaration;
+		}
 
-struct IntLiteral : ASTNode
-{
-	IntLiteral(i32 v) : value(v) {}
+		void accept(ASTVisitor* visitor) override {}
+	};
 
-	i32 value;
-
-	NodeType node_type() override
+	struct BinaryOperator : ASTNode
 	{
-		return NodeType::IntLiteral;
-	}
+		TokenType op;
+		std::unique_ptr<ASTNode> left;
+		std::unique_ptr<ASTNode> right;
 
-	void accept(ASTVisitor* visitor) override {}
-};
+		NodeType node_type() override
+		{
+			return NodeType::BinaryOperator;
+		}
+
+		void accept(ASTVisitor* visitor) override {}
+	};
+
+	struct Identifier : ASTNode
+	{
+		Identifier(const std::string& n) : name(n) {}
+
+		std::string name;
+
+		NodeType node_type() override
+		{
+			return NodeType::Identifier;
+		}
+
+		void accept(ASTVisitor* visitor) override {}
+	};
+
+	struct IntLiteral : ASTNode
+	{
+		IntLiteral(i32 v) : value(v) {}
+
+		i32 value;
+
+		NodeType node_type() override
+		{
+			return NodeType::IntLiteral;
+		}
+
+		void accept(ASTVisitor* visitor) override {}
+	};
+
+}

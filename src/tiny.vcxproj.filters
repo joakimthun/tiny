@@ -44,5 +44,11 @@
     <ClInclude Include="ast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ast_visitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test_files\test.tiny" />
   </ItemGroup>
 </Project>

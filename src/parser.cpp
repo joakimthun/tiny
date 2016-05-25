@@ -159,11 +159,6 @@ namespace tiny {
 		return std::move(fn);
 	}
 
-	//static std::unique_ptr<ASTNode> parse_var_declaration(Parser* parser)
-	//{
-	//	return std::make_unique<VarDeclaration>();
-	//}
-
 	static std::unique_ptr<ASTNode> parse_id(Parser* parser)
 	{
 		auto name = parser->current()->value;

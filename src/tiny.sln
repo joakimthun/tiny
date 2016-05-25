@@ -5,11 +5,6 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tiny", "tiny.vcxproj", "{BCDC431B-FACF-492D-95BE-C4737272917F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test_files", "test_files", "{C18D3FAB-C631-40F9-9676-04A7AE16CE3D}"
-	ProjectSection(SolutionItems) = preProject
-		test_files\test.tiny = test_files\test.tiny
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

@@ -152,11 +152,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ast.h" />
+    <ClInclude Include="ast_visitor.h" />
     <ClInclude Include="lexer.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="tiny_exception.h" />
     <ClInclude Include="token.h" />
     <ClInclude Include="type.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test_files\test.tiny" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
