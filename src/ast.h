@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <memory>
-#include <string>
 
 #include "type.h"
+#include "token.h"
 #include "ast_visitor.h"
 
 #define VISIT(visitor) \

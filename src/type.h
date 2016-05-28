@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <memory>
+#include <string>
 
 typedef int16_t i16;
 typedef uint16_t u16;
@@ -51,4 +51,5 @@ namespace tiny {
 			return *this == *other;
 		}
 	};
+
 }

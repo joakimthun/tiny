@@ -24,7 +24,10 @@
     <ClCompile Include="parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="type_checker.cpp">
+    <ClCompile Include="parsers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="type.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +53,7 @@
     <ClInclude Include="ast_visitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="type_checker.h">
+    <ClInclude Include="parsers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
