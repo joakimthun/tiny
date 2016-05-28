@@ -5,10 +5,14 @@
 #include <string>
 
 #include "type.h"
+#include "ast_visitor.h"
+
+#define VISIT(visitor) \
+	visitor->parents.push(this); \
+	visitor->visit(this); \
+	visitor->parents.pop(); \
 
 namespace tiny {
-
-	class ASTVisitor;
 
 	enum class NodeType : u16
 	{
@@ -21,26 +25,37 @@ namespace tiny {
 
 	struct ASTNode
 	{
+		ASTNode() : type(nullptr) {}
+		ASTNode(std::unique_ptr<TinyType> t) : type(std::move(t)) {}
+
 		virtual ~ASTNode()
 		{
 		}
 
 		virtual NodeType node_type() = 0;
 		virtual void accept(ASTVisitor* visitor) = 0;
+
+		std::unique_ptr<TinyType> type;
 	};
 
 	struct AST
 	{
 		std::vector<std::unique_ptr<ASTNode>> nodes;
+
+		void accept(ASTVisitor* visitor)
+		{
+			for (auto& n : nodes)
+				n->accept(visitor);
+		}
 	};
 
 	struct FnDeclaration : ASTNode
 	{
-		FnDeclaration() : entry_point(false) {}
+		FnDeclaration() : ASTNode(std::make_unique<TinyType>(Type::Fn)), entry_point(false) {}
 
 		std::string name;
 		bool entry_point;
-		std::vector<Type> return_types;
+		std::unique_ptr<TinyType> return_type;
 		std::vector<std::unique_ptr<ASTNode>> body;
 
 		NodeType node_type() override
@@ -48,13 +63,15 @@ namespace tiny {
 			return NodeType::FnDeclaration;
 		}
 
-		void accept(ASTVisitor* visitor) override {}
+		void accept(ASTVisitor* visitor) override 
+		{
+			VISIT(visitor)
+		}
 	};
 
 	struct VarDeclaration : ASTNode
 	{
 		std::string name;
-		Type type;
 		std::unique_ptr<ASTNode> expression;
 
 		NodeType node_type() override
@@ -62,7 +79,10 @@ namespace tiny {
 			return NodeType::VarDeclaration;
 		}
 
-		void accept(ASTVisitor* visitor) override {}
+		void accept(ASTVisitor* visitor) override 
+		{
+			VISIT(visitor)
+		}
 	};
 
 	struct BinaryOperator : ASTNode
@@ -76,7 +96,10 @@ namespace tiny {
 			return NodeType::BinaryOperator;
 		}
 
-		void accept(ASTVisitor* visitor) override {}
+		void accept(ASTVisitor* visitor) override 
+		{
+			VISIT(visitor)
+		}
 	};
 
 	struct Identifier : ASTNode
@@ -90,12 +113,15 @@ namespace tiny {
 			return NodeType::Identifier;
 		}
 
-		void accept(ASTVisitor* visitor) override {}
+		void accept(ASTVisitor* visitor) override 
+		{
+			VISIT(visitor)
+		}
 	};
 
 	struct IntLiteral : ASTNode
 	{
-		IntLiteral(i32 v) : value(v) {}
+		IntLiteral(i32 v) : ASTNode(std::make_unique<TinyType>(Type::I32)), value(v) {}
 
 		i32 value;
 
@@ -104,7 +130,10 @@ namespace tiny {
 			return NodeType::IntLiteral;
 		}
 
-		void accept(ASTVisitor* visitor) override {}
+		void accept(ASTVisitor* visitor) override 
+		{
+			VISIT(visitor)
+		}
 	};
 
 }
