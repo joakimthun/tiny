@@ -134,7 +134,7 @@ namespace tiny {
 
 	void Parser::throw_unexpected_token() const
 	{
-		throw TinyException("Unexpected token, Line: %d Column: %d", current_token_->line_number, current_token_->start_column);
+		throw TinyException("Unexpected token, Line: " + std::to_string(current_token_->line_number) + " Column: " + std::to_string(current_token_->start_column));
 	}
 
 	void Parser::register_global_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler)
@@ -207,6 +207,7 @@ namespace tiny {
 	{
 		// Global parsers
 		register_global_parser(TokenType::Fn, parse_fn_declaration);
+		register_global_parser(TokenType::Ext, parse_fn_declaration);
 
 		// LL2 parsers
 		register_ll2_parser(TokenType::Id, TokenType::ShortDec, parse_short_dec);
@@ -215,6 +216,7 @@ namespace tiny {
 		register_parser(TokenType::LParen, parse_grouped_expression);
 		register_parser(TokenType::Id, parse_id);
 		register_parser(TokenType::IntLiteral, parse_literal);
+		register_parser(TokenType::Ret, parse_ret_dec);
 
 		// Infix parsers
 		register_infix_parser(TokenType::Assign, parse_binary_operator);

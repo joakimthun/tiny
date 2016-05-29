@@ -208,8 +208,10 @@ namespace tiny {
 	void Lexer::init_keywords()
 	{
 		register_keyword("fn", TokenType::Fn);
+		register_keyword("ext", TokenType::Ext);
+		register_keyword("ret", TokenType::Ret);
 
 		// Types
-		register_keyword("i32", TokenType::Fn);
+		register_keyword("i32", TokenType::I32);
 	}
 }

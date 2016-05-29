@@ -30,6 +30,9 @@
     <ClCompile Include="type.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="codegen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lexer.h">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="symbols.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

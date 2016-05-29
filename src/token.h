@@ -16,6 +16,8 @@ namespace tiny {
 		LParen,
 		RParen,
 		Fn,
+		Ext,
+		Ret,
 		Id,
 		IntLiteral,
 		ShortDec,

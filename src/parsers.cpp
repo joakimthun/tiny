@@ -8,6 +8,13 @@ namespace tiny {
 
 	std::unique_ptr<ASTNode> parse_fn_declaration(Parser* parser)
 	{
+		bool ext = false;
+		if(parser->current()->type == TokenType::Ext)
+		{
+			ext = true;
+			parser->consume(TokenType::Ext);
+		}
+
 		auto fn = std::make_unique<FnDeclaration>(parser->current_scope());
 		parser->push_scope(fn->symbol_table_.get());
 		parser->consume(TokenType::Fn);
@@ -17,11 +24,25 @@ namespace tiny {
 		fn->name = name;
 
 		parser->consume(TokenType::LParen);
+
+		while (parser->current()->type != TokenType::RParen)
+		{
+			auto arg_name = parser->current()->value;
+			parser->consume(TokenType::Id);
+			auto arg_type = get_type_from_token(parser->current()->type);
+			parser->consume();
+
+			fn->args.push_back(std::make_unique<ArgDeclaration>(arg_name, std::move(arg_type)));
+		}
+
 		parser->consume(TokenType::RParen);
 		parser->consume(TokenType::RArrow);
 
 		fn->return_type = get_type_from_token(parser->current()->type);
 		parser->consume();
+
+		if(ext)
+			return std::move(fn);
 
 		parser->consume(TokenType::LBracket);
 
@@ -101,6 +122,12 @@ namespace tiny {
 			parser->current_scope()->add_entry(name, std::make_unique<TinyType>(exp->type->type));
 
 		return std::make_unique<VarDeclaration>(name, std::move(exp), std::make_unique<TinyType>(exp->type->type));
+	}
+
+	std::unique_ptr<ASTNode> parse_ret_dec(Parser* parser)
+	{
+		parser->consume(TokenType::Ret);
+		return std::make_unique<RetDeclaration>(parser->parse_expression());
 	}
 
 }

@@ -18,10 +18,12 @@ namespace tiny {
 	enum class NodeType : u16
 	{
 		FnDeclaration,
+		ArgDeclaration,
 		VarDeclaration,
 		IntLiteral,
 		BinaryOperator,
 		Identifier,
+		RetDeclaration
 	};
 
 	struct ASTNode
@@ -58,6 +60,22 @@ namespace tiny {
 		}
 	};
 
+	struct ArgDeclaration : ASTNode
+	{
+		ArgDeclaration(const std::string& n, std::unique_ptr<TinyType> t) : ASTNode(std::move(t)), name(n) {}
+
+		std::string name;
+
+		NodeType node_type() override
+		{
+			return NodeType::ArgDeclaration;
+		}
+
+		void accept(ASTVisitor* visitor) override
+		{
+		}
+	};
+
 	struct FnDeclaration : ASTNode, Scope
 	{
 		FnDeclaration(const SymbolTable* parent) : ASTNode(std::make_unique<TinyType>(Type::Fn)), Scope(parent), entry_point(false) {}
@@ -65,6 +83,7 @@ namespace tiny {
 		std::string name;
 		bool entry_point;
 		std::unique_ptr<TinyType> return_type;
+		std::vector<std::unique_ptr<ArgDeclaration>> args;
 		std::vector<std::unique_ptr<ASTNode>> body;
 
 		NodeType node_type() override
@@ -90,6 +109,22 @@ namespace tiny {
 		}
 
 		void accept(ASTVisitor* visitor) override 
+		{
+			VISIT(visitor)
+		}
+	};
+
+	struct RetDeclaration : ASTNode
+	{
+		RetDeclaration(std::unique_ptr<ASTNode> exp) : ASTNode(std::make_unique<TinyType>(exp->type->type)), expression(std::move(exp)) {}
+		std::unique_ptr<ASTNode> expression;
+
+		NodeType node_type() override
+		{
+			return NodeType::RetDeclaration;
+		}
+
+		void accept(ASTVisitor* visitor) override
 		{
 			VISIT(visitor)
 		}
