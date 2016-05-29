@@ -10,11 +10,10 @@ namespace tiny {
 
 	CodeGen::CodeGen() : builder_(llvm::getGlobalContext()), module_(llvm::make_unique<llvm::Module>("tiny module", llvm::getGlobalContext()))
 	{
-		// C functions
+		// ---- C functions ----
+		// Puts
 		std::vector<llvm::Type*> puts_args;
 		puts_args.push_back(builder_.getInt8Ty()->getPointerTo());
-		//llvm::ArrayRef<llvm::Type*>  argsRef(putsArgs);
-
 		auto puts_type = llvm::FunctionType::get(builder_.getInt32Ty(), puts_args, false);
 		module_->getOrInsertFunction("puts", puts_type);
 	}
