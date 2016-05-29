@@ -48,7 +48,7 @@ namespace tiny {
 			return std::make_unique<Identifier>(name, std::make_unique<TinyType>(entry->type->type));
 		}
 
-		parser->register_error("Unknown identifier '%s', line: %d", name, parser->current()->line_number);
+		parser->register_error("Unknown identifier '" + name + "', line: " + std::to_string(parser->current()->line_number));
 		return std::make_unique<Identifier>(name, std::make_unique<TinyType>(Type::Undefined));
 	}
 
@@ -74,7 +74,7 @@ namespace tiny {
 		auto right = parser->parse_expression(get_operator_precedence(op));
 
 		if (!left->type->are_equal(right->type.get()))
-			parser->register_error("Type mismatch at line: %d", parser->current()->line_number);
+			parser->register_error("Type mismatch at line: " + std::to_string(parser->current()->line_number));
 
 		return std::make_unique<BinaryOperator>(op, std::move(left), std::move(right));
 	}
@@ -96,7 +96,7 @@ namespace tiny {
 		auto exp = parser->parse_expression();
 
 		if (parser->current_scope()->has_entry(name))
-			parser->register_error("An identifier with the name '%s' already exists in the current scope", name);
+			parser->register_error("An identifier with the name '" + name + "' already exists in the current scope, Line: " + std::to_string(parser->current()->line_number));
 		else
 			parser->current_scope()->add_entry(name, std::make_unique<TinyType>(exp->type->type));
 

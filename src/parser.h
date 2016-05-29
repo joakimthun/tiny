@@ -33,7 +33,7 @@ namespace tiny {
 		void consume();
 		const Token* current() const;
 		const Token* peek() const;
-		void register_error(const char* fmt, ...);
+		void register_error(const std::string& msg);
 		void push_scope(SymbolTable* scope);
 		void pop_scope();
 		SymbolTable* current_scope();

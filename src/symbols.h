@@ -48,6 +48,7 @@ namespace tiny {
 
 		void add_entry(const std::string& name, std::unique_ptr<TinyType> type)
 		{
+			symbols_.insert(std::make_pair(name, std::make_unique<Symbol>(name, std::move(type))));
 		}
 
 	private:

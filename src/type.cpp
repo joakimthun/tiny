@@ -8,6 +8,8 @@ namespace tiny {
 	{
 		switch (t)
 		{
+		case Type::Undefined:
+			return "undefined";
 		case Type::Void: 
 			return "void";
 		case Type::UserDefined: 

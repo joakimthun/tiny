@@ -47,9 +47,14 @@ namespace tiny {
 
 	std::unique_ptr<ASTNode> Parser::parse_expression(u16 precedence)
 	{
-		auto parser = get_parser(current_token_->type);
+		auto parser = get_ll2_parser(current_token_->type, peek()->type);
+
 		if (parser == nullptr)
-			throw_unexpected_token();
+		{
+			parser = get_parser(current_token_->type);
+			if (parser == nullptr)
+				throw_unexpected_token();
+		}
 
 		auto left = parser(this);
 		while (precedence < get_operator_precedence(current_token_->type))
@@ -87,14 +92,9 @@ namespace tiny {
 		return lexer_->peek();
 	}
 
-	void Parser::register_error(const char* fmt, ...)
+	void Parser::register_error(const std::string& msg)
 	{
-		va_list args;
-		va_start(args, fmt);
-
-		char b[1024];
-		sprintf_s(b, 1024, fmt, args);
-		errors_.push_back(std::string(b));
+		errors_.push_back(msg);
 
 		if(errors_.size() >= 5)
 		{
@@ -119,6 +119,9 @@ namespace tiny {
 
 	void Parser::throw_if_has_errors() const
 	{
+		if(errors_.size() == 0)
+			return;
+
 		auto s = std::stringstream();
 
 		s << "Errors: " << std::endl;
