@@ -158,6 +158,7 @@
     <ClInclude Include="lexer.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parsers.h" />
+    <ClInclude Include="symbols.h" />
     <ClInclude Include="tiny_exception.h" />
     <ClInclude Include="token.h" />
     <ClInclude Include="type.h" />

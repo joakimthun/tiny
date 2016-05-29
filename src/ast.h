@@ -6,6 +6,7 @@
 #include "type.h"
 #include "token.h"
 #include "ast_visitor.h"
+#include "symbols.h"
 
 #define VISIT(visitor) \
 	visitor->parents.push(this); \
@@ -38,8 +39,16 @@ namespace tiny {
 		std::unique_ptr<TinyType> type;
 	};
 
-	struct AST
+	struct Scope
 	{
+		Scope(const SymbolTable* parent) : symbol_table_(std::make_unique<SymbolTable>(parent)) {}
+		std::unique_ptr<SymbolTable> symbol_table_;
+	};
+
+	struct AST : Scope
+	{
+		AST() : Scope(nullptr) {}
+
 		std::vector<std::unique_ptr<ASTNode>> nodes;
 
 		void accept(ASTVisitor* visitor)
@@ -49,9 +58,9 @@ namespace tiny {
 		}
 	};
 
-	struct FnDeclaration : ASTNode
+	struct FnDeclaration : ASTNode, Scope
 	{
-		FnDeclaration() : ASTNode(std::make_unique<TinyType>(Type::Fn)), entry_point(false) {}
+		FnDeclaration(const SymbolTable* parent) : ASTNode(std::make_unique<TinyType>(Type::Fn)), Scope(parent), entry_point(false) {}
 
 		std::string name;
 		bool entry_point;
@@ -71,6 +80,7 @@ namespace tiny {
 
 	struct VarDeclaration : ASTNode
 	{
+		VarDeclaration(const std::string& n, std::unique_ptr<ASTNode> exp, std::unique_ptr<TinyType> t) : ASTNode(std::move(t)), name(n), expression(std::move(exp)) {}
 		std::string name;
 		std::unique_ptr<ASTNode> expression;
 
@@ -87,6 +97,7 @@ namespace tiny {
 
 	struct BinaryOperator : ASTNode
 	{
+		BinaryOperator(TokenType o, std::unique_ptr<ASTNode> l, std::unique_ptr<ASTNode> r) : ASTNode(std::make_unique<TinyType>(l->type->type)), op(o), left(std::move(l)), right(std::move(r)) {}
 		TokenType op;
 		std::unique_ptr<ASTNode> left;
 		std::unique_ptr<ASTNode> right;
@@ -104,7 +115,7 @@ namespace tiny {
 
 	struct Identifier : ASTNode
 	{
-		Identifier(const std::string& n) : name(n) {}
+		Identifier(const std::string& n, std::unique_ptr<TinyType> t) : ASTNode(std::move(t)), name(n) {}
 
 		std::string name;
 

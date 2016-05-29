@@ -2,12 +2,14 @@
 #include "token.h"
 #include "parser.h"
 #include "tiny_exception.h"
+#include "type.h"
 
 namespace tiny {
 
 	std::unique_ptr<ASTNode> parse_fn_declaration(Parser* parser)
 	{
-		auto fn = std::make_unique<FnDeclaration>();
+		auto fn = std::make_unique<FnDeclaration>(parser->current_scope());
+		parser->push_scope(fn->symbol_table_.get());
 		parser->consume(TokenType::Fn);
 
 		auto name = parser->current()->value;
@@ -16,10 +18,9 @@ namespace tiny {
 
 		parser->consume(TokenType::LParen);
 		parser->consume(TokenType::RParen);
-
 		parser->consume(TokenType::RArrow);
 
-		// TODO: Grab the return type...
+		fn->return_type = get_type_from_token(parser->current()->type);
 		parser->consume();
 
 		parser->consume(TokenType::LBracket);
@@ -31,6 +32,8 @@ namespace tiny {
 
 		parser->consume(TokenType::RBracket);
 
+		parser->pop_scope();
+
 		return std::move(fn);
 	}
 
@@ -38,7 +41,15 @@ namespace tiny {
 	{
 		auto name = parser->current()->value;
 		parser->consume(TokenType::Id);
-		return std::make_unique<Identifier>(name);
+
+		if (parser->current_scope()->has_entry(name))
+		{
+			auto entry = parser->current_scope()->get_entry(name);
+			return std::make_unique<Identifier>(name, std::make_unique<TinyType>(entry->type->type));
+		}
+
+		parser->register_error("Unknown identifier '%s', line: %d", name, parser->current()->line_number);
+		return std::make_unique<Identifier>(name, std::make_unique<TinyType>(Type::Undefined));
 	}
 
 	std::unique_ptr<ASTNode> parse_literal(Parser* parser)
@@ -57,15 +68,15 @@ namespace tiny {
 
 	std::unique_ptr<ASTNode> parse_binary_operator(Parser* parser, std::unique_ptr<ASTNode> left)
 	{
-		auto binary_node = std::make_unique<BinaryOperator>();
-
-		binary_node->op = parser->current()->type;
+		auto op = parser->current()->type;
 		parser->consume();
 
-		binary_node->left = std::move(left);
-		binary_node->right = parser->parse_expression(get_operator_precedence(binary_node->op));
+		auto right = parser->parse_expression(get_operator_precedence(op));
 
-		return std::move(binary_node);
+		if (!left->type->are_equal(right->type.get()))
+			parser->register_error("Type mismatch at line: %d", parser->current()->line_number);
+
+		return std::make_unique<BinaryOperator>(op, std::move(left), std::move(right));
 	}
 
 	std::unique_ptr<ASTNode> parse_grouped_expression(Parser* parser)
@@ -74,6 +85,22 @@ namespace tiny {
 		auto expression = parser->parse_expression();
 		parser->consume(TokenType::RParen);
 		return expression;
+	}
+
+	std::unique_ptr<ASTNode> parse_short_dec(Parser* parser)
+	{
+		auto name = parser->current()->value;
+		parser->consume(TokenType::Id);
+		parser->consume(TokenType::ShortDec);
+
+		auto exp = parser->parse_expression();
+
+		if (parser->current_scope()->has_entry(name))
+			parser->register_error("An identifier with the name '%s' already exists in the current scope", name);
+		else
+			parser->current_scope()->add_entry(name, std::make_unique<TinyType>(exp->type->type));
+
+		return std::make_unique<VarDeclaration>(name, std::move(exp), std::make_unique<TinyType>(exp->type->type));
 	}
 
 }

@@ -1,5 +1,7 @@
-#include "parser.h"
+#include <sstream>
+#include <iostream>
 
+#include "parser.h"
 #include "tiny_exception.h"
 #include "parsers.h"
 
@@ -14,10 +16,17 @@ namespace tiny {
 	std::unique_ptr<AST> Parser::parse()
 	{
 		auto ast = std::make_unique<AST>();
+
+		push_scope(ast->symbol_table_.get());
+
 		while (current_token_->type != TokenType::Eof)
 		{
 			ast->nodes.push_back(parse_global());
 		}
+
+		pop_scope();
+
+		throw_if_has_errors();
 
 		return ast;
 	}
@@ -78,6 +87,48 @@ namespace tiny {
 		return lexer_->peek();
 	}
 
+	void Parser::register_error(const char* fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+
+		char b[1024];
+		sprintf_s(b, 1024, fmt, args);
+		errors_.push_back(std::string(b));
+
+		if(errors_.size() >= 5)
+		{
+			throw_if_has_errors();
+		}
+	}
+
+	void Parser::push_scope(SymbolTable* scope)
+	{
+		scopes_.push(scope);
+	}
+
+	void Parser::pop_scope()
+	{
+		scopes_.pop();
+	}
+
+	SymbolTable* Parser::current_scope()
+	{
+		return scopes_.top();
+	}
+
+	void Parser::throw_if_has_errors() const
+	{
+		auto s = std::stringstream();
+
+		s << "Errors: " << std::endl;
+
+		for (const auto& msg : errors_)
+			s << msg << std::endl;
+
+		throw TinyException(s.str());
+	}
+
 	void Parser::throw_unexpected_token() const
 	{
 		throw TinyException("Unexpected token, Line: %d Column: %d", current_token_->line_number, current_token_->start_column);
@@ -91,6 +142,11 @@ namespace tiny {
 	void Parser::register_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler)
 	{
 		parsers_.insert(std::make_pair(type, handler));
+	}
+
+	void Parser::register_ll2_parser(TokenType t1, TokenType t2, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler)
+	{
+		ll2_parsers_.push_back(LL2ParserEntry{ t1, t2, handler });
 	}
 
 	void Parser::register_infix_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser, std::unique_ptr<ASTNode> left)> handler)
@@ -120,6 +176,17 @@ namespace tiny {
 		return nullptr;
 	}
 
+	std::function<std::unique_ptr<ASTNode>(Parser*)> Parser::get_ll2_parser(TokenType t1, TokenType t2)
+	{
+		for(auto& e : ll2_parsers_)
+		{
+			if (e.t1 == t1 && e.t2 == t2)
+				return e.parser;
+		}
+
+		return nullptr;
+	}
+
 	std::function<std::unique_ptr<ASTNode>(Parser*, std::unique_ptr<ASTNode>)> Parser::get_infix_parser(TokenType type)
 	{
 		auto it = infix_parsers_.find(type);
@@ -137,7 +204,9 @@ namespace tiny {
 	{
 		// Global parsers
 		register_global_parser(TokenType::Fn, parse_fn_declaration);
-		register_global_parser(TokenType::Id, parse_id);
+
+		// LL2 parsers
+		register_ll2_parser(TokenType::Id, TokenType::ShortDec, parse_short_dec);
 
 		// Parsers
 		register_parser(TokenType::LParen, parse_grouped_expression);

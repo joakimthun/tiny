@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 #include <string>
+#include <memory>
+
+#include "tiny_exception.h"
 
 typedef int16_t i16;
 typedef uint16_t u16;
@@ -14,25 +17,20 @@ typedef uint64_t u64;
 
 namespace tiny {
 
+	struct TinyType;
+	enum class TokenType : u16;
+
 	enum class Type : u16
 	{
+		Undefined,
 		Void,
 		UserDefined,
 		Fn,
 		I32,
 	};
 
-	inline std::string get_type_name(Type t)
-	{
-		switch (t)
-		{
-		case Type::Void: return "void";
-		case Type::UserDefined: throw "get_type_name -> UserDefined";
-		case Type::Fn: return "fn";
-		case Type::I32: return "i32";
-		default: throw "get_type_name";
-		}
-	}
+	std::string get_type_name(Type t);
+	std::unique_ptr<TinyType> get_type_from_token(TokenType t);
 
 	struct TinyType
 	{
@@ -48,6 +46,9 @@ namespace tiny {
 
 		bool are_equal(const TinyType* other) const
 		{
+			if (other == nullptr)
+				throw TinyException("TinyType -> are_equal nullptr");
+
 			return *this == *other;
 		}
 	};

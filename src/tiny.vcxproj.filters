@@ -56,6 +56,9 @@
     <ClInclude Include="parsers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="symbols.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="test_files\test.tiny" />
