@@ -67,7 +67,7 @@ namespace tiny {
 			case '=':
 				return create(TokenType::Assign, "=");
 			case '*':
-				return create(TokenType::Times, "*");
+				return create(TokenType::Star, "*");
 			case '/':
 				return create(TokenType::Divide, "/");
 			case '(':
@@ -82,6 +82,8 @@ namespace tiny {
 				return create(TokenType::LSBracket, "[");
 			case ']':
 				return create(TokenType::RSBracket, "]");
+			case ',':
+				return create(TokenType::Comma, ",");
 			case ':': {
 				auto t = try_match_tokens(':', '=', TokenType::ShortDec);
 				if (t != nullptr)
@@ -213,5 +215,6 @@ namespace tiny {
 
 		// Types
 		register_keyword("i32", TokenType::I32);
+		register_keyword("i8", TokenType::I8);
 	}
 }

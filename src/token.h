@@ -10,7 +10,8 @@ namespace tiny {
 		Plus,
 		Minus,
 		Assign,
-		Times,
+		Star,
+		Comma,
 		RArrow,
 		Divide,
 		LParen,
@@ -25,7 +26,8 @@ namespace tiny {
 		RBracket,
 		LSBracket,
 		RSBracket,
-		I32
+		I32,
+		I8
 	};
 
 	enum class Precedence : u16
@@ -53,7 +55,7 @@ namespace tiny {
 		case TokenType::Plus:
 		case TokenType::Minus:
 			return static_cast<u16>(Precedence::Sum);
-		case TokenType::Times:
+		case TokenType::Star:
 		case TokenType::Divide:
 			return static_cast<u16>(Precedence::Product);
 		}

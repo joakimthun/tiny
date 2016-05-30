@@ -27,10 +27,13 @@ namespace tiny {
 		UserDefined,
 		Fn,
 		I32,
+		I32Ptr,
+		I8,
+		I8Ptr,
 	};
 
 	std::string get_type_name(Type t);
-	std::unique_ptr<TinyType> get_type_from_token(TokenType t);
+	std::unique_ptr<TinyType> get_type_from_token(TokenType t, bool pointer);
 
 	struct TinyType
 	{

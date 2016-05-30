@@ -3,7 +3,7 @@
 #include <queue>
 
 namespace tiny {
-	
+
 	struct AST;
 	struct ASTNode;
 	struct FnDeclaration;
@@ -12,6 +12,7 @@ namespace tiny {
 	struct Identifier;
 	struct IntLiteral;
 	struct RetDeclaration;
+	struct CallExp;
 
 	class ASTVisitor
 	{
@@ -24,6 +25,7 @@ namespace tiny {
 		virtual void visit(Identifier* node) = 0;
 		virtual void visit(IntLiteral* node) = 0;
 		virtual void visit(RetDeclaration* node) = 0;
+		virtual void visit(CallExp* node) = 0;
 
 		std::queue<ASTNode*> parents;
 	};

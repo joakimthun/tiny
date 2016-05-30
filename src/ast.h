@@ -23,7 +23,8 @@ namespace tiny {
 		IntLiteral,
 		BinaryOperator,
 		Identifier,
-		RetDeclaration
+		RetDeclaration,
+		CallExp,
 	};
 
 	struct ASTNode
@@ -43,7 +44,7 @@ namespace tiny {
 
 	struct Scope
 	{
-		Scope(const SymbolTable* parent) : symbol_table_(std::make_unique<SymbolTable>(parent)) {}
+		Scope(SymbolTable* parent) : symbol_table_(std::make_unique<SymbolTable>(parent)) {}
 		std::unique_ptr<SymbolTable> symbol_table_;
 	};
 
@@ -78,13 +79,14 @@ namespace tiny {
 
 	struct FnDeclaration : ASTNode, Scope
 	{
-		FnDeclaration(const SymbolTable* parent) : ASTNode(std::make_unique<TinyType>(Type::Fn)), Scope(parent), entry_point(false) {}
+		FnDeclaration(SymbolTable* parent, bool ext) : ASTNode(std::make_unique<TinyType>(Type::Fn)), Scope(parent), entry_point(false), external(ext) {}
 
 		std::string name;
 		bool entry_point;
 		std::unique_ptr<TinyType> return_type;
 		std::vector<std::unique_ptr<ArgDeclaration>> args;
 		std::vector<std::unique_ptr<ASTNode>> body;
+		bool external;
 
 		NodeType node_type() override
 		{
@@ -97,11 +99,30 @@ namespace tiny {
 		}
 	};
 
+	struct CallExp : ASTNode
+	{
+		CallExp(std::unique_ptr<TinyType> t) : ASTNode(std::move(t)) {}
+
+		std::string name;
+		std::vector<std::unique_ptr<ASTNode>> args;
+
+		NodeType node_type() override
+		{
+			return NodeType::CallExp;
+		}
+
+		void accept(ASTVisitor* visitor) override
+		{
+			VISIT(visitor)
+		}
+	};
+
 	struct VarDeclaration : ASTNode
 	{
-		VarDeclaration(const std::string& n, std::unique_ptr<ASTNode> exp, std::unique_ptr<TinyType> t) : ASTNode(std::move(t)), name(n), expression(std::move(exp)) {}
+		VarDeclaration(const std::string& n, std::unique_ptr<ASTNode> exp, std::unique_ptr<TinyType> t, bool ptr) : ASTNode(std::move(t)), name(n), expression(std::move(exp)), pointer(ptr) {}
 		std::string name;
 		std::unique_ptr<ASTNode> expression;
+		bool pointer;
 
 		NodeType node_type() override
 		{

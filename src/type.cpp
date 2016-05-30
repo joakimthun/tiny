@@ -18,12 +18,18 @@ namespace tiny {
 			return "fn";
 		case Type::I32: 
 			return "i32";
+		case Type::I32Ptr:
+			return "i32Ptr";
+		case Type::I8:
+			return "i8";
+		case Type::I8Ptr:
+			return "i8Ptr";
 		default: 
 			throw TinyException("get_type_name -> default case");
 		}
 	}
 
-	std::unique_ptr<TinyType> get_type_from_token(TokenType t)
+	std::unique_ptr<TinyType> get_type_from_token(TokenType t, bool pointer)
 	{
 		switch (t)
 		{
@@ -31,7 +37,9 @@ namespace tiny {
 			return std::make_unique<TinyType>(Type::Fn);
 		case TokenType::IntLiteral:
 		case TokenType::I32:
-			return std::make_unique<TinyType>(Type::I32);
+			return std::make_unique<TinyType>(pointer ? Type::I32Ptr : Type::I32);
+		case TokenType::I8:
+			return std::make_unique<TinyType>(pointer ? Type::I8Ptr : Type::I8);
 		default:
 			throw TinyException("get_type_from_token -> default case");
 		}

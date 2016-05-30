@@ -16,7 +16,7 @@ namespace tiny {
 	class SymbolTable
 	{
 	public:
-		SymbolTable(const SymbolTable* parent) : parent_(parent) {}
+		SymbolTable(SymbolTable* parent) : parent_(parent) {}
 
 		bool has_entry(const std::string& name) const
 		{
@@ -51,8 +51,16 @@ namespace tiny {
 			symbols_.insert(std::make_pair(name, std::make_unique<Symbol>(name, std::move(type))));
 		}
 
+		void add_root_entry(const std::string& name, std::unique_ptr<TinyType> type)
+		{
+			if (parent_ != nullptr)
+				return parent_->add_root_entry(name, std::move(type));
+
+			add_entry(name, std::move(type));
+		}
+
 	private:
-		const SymbolTable* parent_;
+		SymbolTable* parent_;
 		std::unordered_map<std::string, std::unique_ptr<Symbol>> symbols_;
 	};
 

@@ -10,12 +10,6 @@ namespace tiny {
 
 	CodeGen::CodeGen() : builder_(llvm::getGlobalContext()), module_(llvm::make_unique<llvm::Module>("tiny module", llvm::getGlobalContext()))
 	{
-		// ---- C functions ----
-		// Puts
-		std::vector<llvm::Type*> puts_args;
-		puts_args.push_back(builder_.getInt8Ty()->getPointerTo());
-		auto puts_type = llvm::FunctionType::get(builder_.getInt32Ty(), puts_args, false);
-		module_->getOrInsertFunction("puts", puts_type);
 	}
 
 	void CodeGen::visit(AST* ast)
@@ -26,8 +20,21 @@ namespace tiny {
 
 	void CodeGen::visit(FnDeclaration* node)
 	{
-		std::vector<llvm::Type*> args(1,llvm::Type::getInt32Ty(llvm::getGlobalContext()));
-		auto ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()), args, false);
+		std::vector<llvm::Type*> args;
+
+		for (auto& arg : node->args)
+		{
+			args.push_back(get_llvm_type(arg->type.get()));
+		}
+
+		auto ft = llvm::FunctionType::get(get_llvm_type(node->return_type.get()), args, false);
+
+		if(node->external)
+		{
+			module_->getOrInsertFunction(node->name, ft);
+			return;
+		}
+
 		auto f = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, node->name, module_.get());
 		auto bb = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", f);
 		builder_.SetInsertPoint(bb);
@@ -60,7 +67,7 @@ namespace tiny {
 		case TokenType::Minus: 
 			value_stack_.push(builder_.CreateSub(l, r, "subtmp"));
 			break;
-		case TokenType::Times: 
+		case TokenType::Star:
 			value_stack_.push(builder_.CreateSub(l, r, "multmp"));
 			break;
 		case TokenType::Divide: 
@@ -88,17 +95,28 @@ namespace tiny {
 		value_stack_.pop();
 	}
 
+	void CodeGen::visit(CallExp* node)
+	{
+
+	}
+
 	void CodeGen::dump_module() const
 	{
 		module_->dump();
 	}
 
-	std::unique_ptr<llvm::IntegerType> CodeGen::get_llvm_type(const TinyType* type)
+	llvm::Type* CodeGen::get_llvm_type(const TinyType* type)
 	{
 		switch (type->type)
 		{
 		case Type::I32: 
-			return std::unique_ptr<llvm::IntegerType>(llvm::Type::getInt32Ty(llvm::getGlobalContext()));
+			return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+		case Type::I32Ptr:
+			return llvm::Type::getInt32PtrTy(llvm::getGlobalContext());
+		case Type::I8:
+			return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+		case Type::I8Ptr:
+			return llvm::Type::getInt8PtrTy(llvm::getGlobalContext());
 		default: 
 			throw TinyException("Default case --> CodeGen::get_llvm_type");
 		}

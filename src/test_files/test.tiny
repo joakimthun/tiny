@@ -1,4 +1,4 @@
-
+ext fn puts(c i8*) -> i32
 
 fn main() -> i32 {
 	ret 10 + 1

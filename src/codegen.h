@@ -23,9 +23,11 @@ namespace tiny {
 		void visit(Identifier* node) override;
 		void visit(IntLiteral* node) override;
 		void visit(RetDeclaration* node) override;
+		void visit(CallExp* node) override;
+
 		void dump_module() const;
 	private:
-		static std::unique_ptr<llvm::IntegerType> get_llvm_type(const TinyType* type);
+		static llvm::Type* get_llvm_type(const TinyType* type);
 
 		llvm::IRBuilder<> builder_;
 		std::unique_ptr<llvm::Module> module_;

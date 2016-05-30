@@ -82,6 +82,17 @@ namespace tiny {
 		current_token_ = lexer_->next();
 	}
 
+	bool Parser::consume_ptr()
+	{
+		if(current_token_->type == TokenType::Star)
+		{
+			consume(TokenType::Star);
+			return true;
+		}
+
+		return false;
+	}
+
 	const Token* Parser::current() const
 	{
 		return current_token_.get();
@@ -211,6 +222,7 @@ namespace tiny {
 
 		// LL2 parsers
 		register_ll2_parser(TokenType::Id, TokenType::ShortDec, parse_short_dec);
+		register_ll2_parser(TokenType::Id, TokenType::LParen, parse_call);
 
 		// Parsers
 		register_parser(TokenType::LParen, parse_grouped_expression);
@@ -223,7 +235,7 @@ namespace tiny {
 		register_infix_parser(TokenType::ShortDec, parse_binary_operator);
 		register_infix_parser(TokenType::Plus, parse_binary_operator);
 		register_infix_parser(TokenType::Minus, parse_binary_operator);
-		register_infix_parser(TokenType::Times, parse_binary_operator);
+		register_infix_parser(TokenType::Star, parse_binary_operator);
 		register_infix_parser(TokenType::Divide, parse_binary_operator);
 	}
 }

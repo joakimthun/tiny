@@ -31,6 +31,7 @@ namespace tiny {
 		std::unique_ptr<ASTNode> parse_expression(u16 precedence);
 		void consume(TokenType type);
 		void consume();
+		bool consume_ptr();
 		const Token* current() const;
 		const Token* peek() const;
 		void register_error(const std::string& msg);

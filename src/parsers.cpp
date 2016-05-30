@@ -15,7 +15,7 @@ namespace tiny {
 			parser->consume(TokenType::Ext);
 		}
 
-		auto fn = std::make_unique<FnDeclaration>(parser->current_scope());
+		auto fn = std::make_unique<FnDeclaration>(parser->current_scope(), ext);
 		parser->push_scope(fn->symbol_table_.get());
 		parser->consume(TokenType::Fn);
 
@@ -29,8 +29,12 @@ namespace tiny {
 		{
 			auto arg_name = parser->current()->value;
 			parser->consume(TokenType::Id);
-			auto arg_type = get_type_from_token(parser->current()->type);
+			auto arg_type_token = parser->current()->type;
 			parser->consume();
+
+			auto pointer = parser->consume_ptr();
+			auto arg_type = get_type_from_token(arg_type_token, pointer);
+			
 
 			fn->args.push_back(std::make_unique<ArgDeclaration>(arg_name, std::move(arg_type)));
 		}
@@ -38,8 +42,13 @@ namespace tiny {
 		parser->consume(TokenType::RParen);
 		parser->consume(TokenType::RArrow);
 
-		fn->return_type = get_type_from_token(parser->current()->type);
+		auto return_type_token = parser->current()->type;
 		parser->consume();
+
+		auto pointer = parser->consume_ptr();
+		fn->return_type = get_type_from_token(return_type_token, pointer);
+
+		parser->current_scope()->add_root_entry(name, std::make_unique<TinyType>(Type::Fn));
 
 		if(ext)
 			return std::move(fn);
@@ -108,6 +117,16 @@ namespace tiny {
 		return expression;
 	}
 
+	std::unique_ptr<ASTNode> parse_dec(Parser* parser, const std::string& name, std::unique_ptr<TinyType> type, std::unique_ptr<ASTNode> exp, bool pointer = false)
+	{
+		if (parser->current_scope()->has_entry(name))
+			parser->register_error("An identifier with the name '" + name + "' already exists in the current scope, Line: " + std::to_string(parser->current()->line_number));
+		else
+			parser->current_scope()->add_entry(name, std::make_unique<TinyType>(exp->type->type));
+
+		return std::make_unique<VarDeclaration>(name, std::move(exp), std::move(type), pointer);
+	}
+
 	std::unique_ptr<ASTNode> parse_short_dec(Parser* parser)
 	{
 		auto name = parser->current()->value;
@@ -116,18 +135,60 @@ namespace tiny {
 
 		auto exp = parser->parse_expression();
 
-		if (parser->current_scope()->has_entry(name))
-			parser->register_error("An identifier with the name '" + name + "' already exists in the current scope, Line: " + std::to_string(parser->current()->line_number));
-		else
-			parser->current_scope()->add_entry(name, std::make_unique<TinyType>(exp->type->type));
+		return parse_dec(parser, name, std::make_unique<TinyType>(exp->type->type), std::move(exp));
+	}
 
-		return std::make_unique<VarDeclaration>(name, std::move(exp), std::make_unique<TinyType>(exp->type->type));
+	std::unique_ptr<ASTNode> parse_explicit_dec(Parser* parser)
+	{
+		auto type_token = parser->current()->type;
+		parser->consume();
+		
+		auto pointer = parser->consume_ptr();
+
+		auto type = get_type_from_token(type_token, pointer);
+
+		auto name = parser->current()->value;
+		parser->consume(TokenType::Id);
+		parser->consume(TokenType::Assign);
+
+		auto exp = parser->parse_expression();
+
+		return  parse_dec(parser, name, std::move(type), std::move(exp), pointer);
 	}
 
 	std::unique_ptr<ASTNode> parse_ret_dec(Parser* parser)
 	{
 		parser->consume(TokenType::Ret);
 		return std::make_unique<RetDeclaration>(parser->parse_expression());
+	}
+
+	std::unique_ptr<ASTNode> parse_call(Parser* parser)
+	{
+		auto name = parser->current()->value;
+		parser->consume(TokenType::Id);
+		parser->consume(TokenType::LParen);
+
+		auto return_type = std::make_unique<TinyType>(Type::Undefined);
+
+		auto fn = parser->current_scope()->get_entry(name);
+		if (fn == nullptr)
+			parser->register_error("The function '" + name + "' has not been defined, Line: " + std::to_string(parser->current()->line_number));
+		else
+			return_type = std::make_unique<TinyType>(fn->type->type);
+
+		auto exp = std::make_unique<CallExp>(std::move(return_type));
+
+		while(parser->current()->type != TokenType::RParen)
+		{
+			exp->args.push_back(parser->parse_expression());
+			
+			if (parser->current()->type == TokenType::Comma)
+				parser->consume(TokenType::Comma);
+		}
+
+		parser->consume(TokenType::RParen);
+
+		return std::move(exp);
 	}
 
 }
