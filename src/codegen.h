@@ -27,6 +27,9 @@ namespace tiny {
 
 		void dump_module() const;
 	private:
+		void push(llvm::Value* v);
+		llvm::Value* pop();
+
 		static llvm::Type* get_llvm_type(const TinyType* type);
 
 		llvm::IRBuilder<> builder_;

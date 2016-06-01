@@ -53,25 +53,23 @@ namespace tiny {
 	void CodeGen::visit(BinaryOperator* node)
 	{
 		node->left->accept(this);
-		auto l = value_stack_.top();
-		value_stack_.pop();
+		auto l = pop();
 		node->right->accept(this);
-		auto r = value_stack_.top();
-		value_stack_.pop();
+		auto r = pop();
 
 		switch (node->op)
 		{
 		case TokenType::Plus: 
-			value_stack_.push(builder_.CreateAdd(l, r, "addtmp"));
+			push(builder_.CreateAdd(l, r, "addtmp"));
 			break;
 		case TokenType::Minus: 
-			value_stack_.push(builder_.CreateSub(l, r, "subtmp"));
+			push(builder_.CreateSub(l, r, "subtmp"));
 			break;
 		case TokenType::Star:
-			value_stack_.push(builder_.CreateSub(l, r, "multmp"));
+			push(builder_.CreateSub(l, r, "multmp"));
 			break;
 		case TokenType::Divide: 
-			value_stack_.push(builder_.CreateSub(l, r, "divtmp"));
+			push(builder_.CreateSub(l, r, "divtmp"));
 			break;
 		default: 
 			throw TinyException("CodeGen::visit -> BinaryOperator -> default");
@@ -84,15 +82,14 @@ namespace tiny {
 
 	void CodeGen::visit(IntLiteral* node)
 	{
-		value_stack_.push(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, node->value, true)));
+		push(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, node->value, true)));
 	}
 
 	void CodeGen::visit(RetDeclaration* node)
 	{
 		node->expression->accept(this);
 
-		builder_.CreateRet(value_stack_.top());
-		value_stack_.pop();
+		builder_.CreateRet(pop());
 	}
 
 	void CodeGen::visit(CallExp* node)
@@ -103,6 +100,18 @@ namespace tiny {
 	void CodeGen::dump_module() const
 	{
 		module_->dump();
+	}
+
+	void CodeGen::push(llvm::Value* v)
+	{
+		value_stack_.push(v);
+	}
+
+	llvm::Value* CodeGen::pop()
+	{
+		auto v = value_stack_.top();
+		value_stack_.pop();
+		return v;
 	}
 
 	llvm::Type* CodeGen::get_llvm_type(const TinyType* type)
