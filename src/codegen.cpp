@@ -5,11 +5,13 @@
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Verifier.h"
+#include "llvm/ExecutionEngine/Orc/CompileUtils.h"
 
 namespace tiny {
 
-	CodeGen::CodeGen() : builder_(llvm::getGlobalContext()), module_(llvm::make_unique<llvm::Module>("tiny module", llvm::getGlobalContext()))
+	CodeGen::CodeGen(llvm::TargetMachine* tm) : module_(std::make_unique<llvm::Module>("tiny", llvm::getGlobalContext())), builder_(llvm::getGlobalContext())
 	{
+		module_->setDataLayout(tm->createDataLayout());
 	}
 
 	void CodeGen::visit(AST* ast)
@@ -28,20 +30,19 @@ namespace tiny {
 		}
 
 		auto ft = llvm::FunctionType::get(get_llvm_type(node->return_type.get()), args, false);
+		auto f = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, node->name, module_.get());
 
 		if(node->external)
 		{
-			module_->getOrInsertFunction(node->name, ft);
 			return;
 		}
-
-		auto f = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, node->name, module_.get());
-		auto bb = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", f);
+		
+		auto bb = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entryblock", f);
 		builder_.SetInsertPoint(bb);
-
+		
 		for (auto& n : node->body)
 			n->accept(this);
-
+		
 		llvm::verifyFunction(*f);
 	}
 
@@ -97,9 +98,10 @@ namespace tiny {
 
 	}
 
-	void CodeGen::dump_module() const
+	std::unique_ptr<llvm::Module> CodeGen::execute(AST* ast)
 	{
-		module_->dump();
+		visit(ast);
+		return std::move(module_);
 	}
 
 	void CodeGen::push(llvm::Value* v)

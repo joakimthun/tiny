@@ -5,7 +5,6 @@
 #include "ast_visitor.h"
 #include "type.h"
 
-#include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Module.h"
 
@@ -14,7 +13,7 @@ namespace tiny {
 	class CodeGen : public ASTVisitor
 	{
 	public:
-		CodeGen();
+		CodeGen(llvm::TargetMachine* tm);
 
 		void visit(AST* ast) override;
 		void visit(FnDeclaration* node) override;
@@ -25,15 +24,16 @@ namespace tiny {
 		void visit(RetDeclaration* node) override;
 		void visit(CallExp* node) override;
 
-		void dump_module() const;
+		std::unique_ptr<llvm::Module> execute(AST* ast);
+
 	private:
 		void push(llvm::Value* v);
 		llvm::Value* pop();
 
 		static llvm::Type* get_llvm_type(const TinyType* type);
 
-		llvm::IRBuilder<> builder_;
 		std::unique_ptr<llvm::Module> module_;
+		llvm::IRBuilder<> builder_;
 		std::stack<llvm::Value*> value_stack_;
 	};
 

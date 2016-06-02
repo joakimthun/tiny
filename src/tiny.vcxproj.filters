@@ -65,6 +65,9 @@
     <ClInclude Include="codegen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="jit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="test_files\test.tiny" />

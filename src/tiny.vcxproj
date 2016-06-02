@@ -90,13 +90,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_SCL_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>C:\llvm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>LLVMCore.lib;LLVMSupport.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>LLVMCore.lib;LLVMSupport.lib;LLVMX86CodeGen.lib;LLVMTransformUtils.lib;LLVMAnalysis.lib;LLVMBitWriter.lib;LLVMX86Desc.lib;LLVMProfileData.lib;LLVMX86AsmPrinter.lib;LLVMX86AsmParser.lib;LLVMSelectionDAG.lib;LLVMInstCombine.lib;LLVMObject.lib;LLVMRuntimeDyld.lib;LLVMMCParser.lib;LLVMCodeGen.lib;LLVMInstrumentation.lib;LLVMExecutionEngine.lib;LLVMTarget.lib;LLVMBitReader.lib;LLVMX86Utils.lib;LLVMAsmPrinter.lib;LLVMX86Disassembler.lib;LLVMScalarOpts.lib;LLVMMCDisassembler.lib;LLVMMC.lib;LLVMX86Info.lib;LLVMOrcJIT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,7 +122,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_SCL_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>C:\llvm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -130,7 +130,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>LLVMCore.lib;LLVMSupport.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>LLVMCore.lib;LLVMSupport.lib;LLVMX86CodeGen.lib;LLVMTransformUtils.lib;LLVMAnalysis.lib;LLVMBitWriter.lib;LLVMX86Desc.lib;LLVMProfileData.lib;LLVMX86AsmPrinter.lib;LLVMX86AsmParser.lib;LLVMSelectionDAG.lib;LLVMInstCombine.lib;LLVMObject.lib;LLVMRuntimeDyld.lib;LLVMMCParser.lib;LLVMCodeGen.lib;LLVMInstrumentation.lib;LLVMExecutionEngine.lib;LLVMTarget.lib;LLVMBitReader.lib;LLVMX86Utils.lib;LLVMAsmPrinter.lib;LLVMX86Disassembler.lib;LLVMScalarOpts.lib;LLVMMCDisassembler.lib;LLVMMC.lib;LLVMX86Info.lib;LLVMOrcJIT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,6 +163,7 @@
     <ClInclude Include="ast.h" />
     <ClInclude Include="ast_visitor.h" />
     <ClInclude Include="codegen.h" />
+    <ClInclude Include="jit.h" />
     <ClInclude Include="lexer.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parsers.h" />
