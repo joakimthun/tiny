@@ -67,10 +67,10 @@ namespace tiny {
 			push(builder_.CreateSub(l, r, "subtmp"));
 			break;
 		case TokenType::Star:
-			push(builder_.CreateSub(l, r, "multmp"));
+			push(builder_.CreateMul(l, r, "multmp"));
 			break;
 		case TokenType::Divide: 
-			push(builder_.CreateSub(l, r, "divtmp"));
+			push(builder_.CreateSDiv(l, r, "divtmp"));
 			break;
 		default: 
 			throw TinyException("CodeGen::visit -> BinaryOperator -> default");
