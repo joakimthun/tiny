@@ -22,7 +22,7 @@ namespace tiny {
 
 	enum class Type : u16
 	{
-		Undefined,
+		Unresolved,
 		Void,
 		UserDefined,
 		Fn,

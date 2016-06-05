@@ -79,7 +79,7 @@ namespace tiny {
 		}
 
 		parser->register_error("Unknown identifier '" + name + "', line: " + std::to_string(parser->current()->line_number));
-		return std::make_unique<Identifier>(name, std::make_unique<TinyType>(Type::Undefined));
+		return std::make_unique<Identifier>(name, std::make_unique<TinyType>(Type::Unresolved));
 	}
 
 	std::unique_ptr<ASTNode> parse_literal(Parser* parser)
@@ -168,7 +168,7 @@ namespace tiny {
 		parser->consume(TokenType::Id);
 		parser->consume(TokenType::LParen);
 
-		auto return_type = std::make_unique<TinyType>(Type::Undefined);
+		auto return_type = std::make_unique<TinyType>(Type::Unresolved);
 
 		auto fn = parser->current_scope()->get_entry(name);
 		if (fn == nullptr)
