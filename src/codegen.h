@@ -2,7 +2,6 @@
 
 #include <stack>
 
-#include "ast_visitor.h"
 #include "type.h"
 
 #include "llvm/IR/IRBuilder.h"
@@ -10,31 +9,47 @@
 
 namespace tiny {
 	
-	class CodeGen : public ASTVisitor
+	struct AST;
+	struct ASTNode;
+	struct FnDeclaration;
+	struct VarDeclaration;
+	struct BinaryOperator;
+	struct Identifier;
+	struct IntLiteral;
+	struct RetDeclaration;
+	struct CallExp;
+	struct ArgDeclaration;
+
+	struct CodegenResult
+	{
+		CodegenResult(llvm::Value* v) : value(v) {}
+		llvm::Value* value;
+	};
+
+	class CodeGen
 	{
 	public:
 		CodeGen(llvm::TargetMachine* tm);
 
-		void visit(AST* ast) override;
-		void visit(FnDeclaration* node) override;
-		void visit(VarDeclaration* node) override;
-		void visit(BinaryOperator* node) override;
-		void visit(Identifier* node) override;
-		void visit(IntLiteral* node) override;
-		void visit(RetDeclaration* node) override;
-		void visit(CallExp* node) override;
+		std::unique_ptr<CodegenResult> visit(AST* ast);
+		std::unique_ptr<CodegenResult> visit(FnDeclaration* node);
+		std::unique_ptr<CodegenResult> visit(ArgDeclaration* node);
+		std::unique_ptr<CodegenResult> visit(VarDeclaration* node);
+		std::unique_ptr<CodegenResult> visit(BinaryOperator* node);
+		std::unique_ptr<CodegenResult> visit(Identifier* node);
+		std::unique_ptr<CodegenResult> visit(IntLiteral* node);
+		std::unique_ptr<CodegenResult> visit(RetDeclaration* node);
+		std::unique_ptr<CodegenResult> visit(CallExp* node);
 
 		std::unique_ptr<llvm::Module> execute(AST* ast);
 
 	private:
-		void push(llvm::Value* v);
-		llvm::Value* pop();
+		std::unique_ptr<CodegenResult> create_codegen_result(llvm::Value* v);
 
 		static llvm::Type* get_llvm_type(const TinyType* type);
 
 		std::unique_ptr<llvm::Module> module_;
 		llvm::IRBuilder<> builder_;
-		std::stack<llvm::Value*> value_stack_;
 	};
 
 }

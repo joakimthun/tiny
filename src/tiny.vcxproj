@@ -161,7 +161,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ast.h" />
-    <ClInclude Include="ast_visitor.h" />
     <ClInclude Include="codegen.h" />
     <ClInclude Include="jit.h" />
     <ClInclude Include="lexer.h" />

@@ -14,13 +14,17 @@ namespace tiny {
 		module_->setDataLayout(tm->createDataLayout());
 	}
 
-	void CodeGen::visit(AST* ast)
+	std::unique_ptr<CodegenResult> CodeGen::visit(AST* ast)
 	{
 		for (auto& node : ast->nodes)
-			node->accept(this);
+		{
+			auto r = node->codegen(this);
+		}
+
+		return nullptr;
 	}
 
-	void CodeGen::visit(FnDeclaration* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(FnDeclaration* node)
 	{
 		std::vector<llvm::Type*> args;
 
@@ -34,68 +38,75 @@ namespace tiny {
 
 		if(node->external)
 		{
-			return;
+			return nullptr;
 		}
 		
 		auto bb = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entryblock", f);
 		builder_.SetInsertPoint(bb);
 		
 		for (auto& n : node->body)
-			n->accept(this);
+		{
+			auto r = n->codegen(this);
+		}
 		
 		llvm::verifyFunction(*f);
+		return nullptr;
 	}
 
-	void CodeGen::visit(VarDeclaration* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(ArgDeclaration* node)
 	{
-
+		return nullptr;
 	}
 
-	void CodeGen::visit(BinaryOperator* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(VarDeclaration* node)
 	{
-		node->left->accept(this);
-		auto l = pop();
-		node->right->accept(this);
-		auto r = pop();
+		return nullptr;
+	}
+
+	std::unique_ptr<CodegenResult> CodeGen::visit(BinaryOperator* node)
+	{
+		auto l = node->left->codegen(this);
+		auto r = node->right->codegen(this);
 
 		switch (node->op)
 		{
 		case TokenType::Plus: 
-			push(builder_.CreateAdd(l, r, "addtmp"));
+			return create_codegen_result(builder_.CreateAdd(l->value, r->value, "addtmp"));
 			break;
 		case TokenType::Minus: 
-			push(builder_.CreateSub(l, r, "subtmp"));
+			return create_codegen_result(builder_.CreateSub(l->value, r->value, "subtmp"));
 			break;
 		case TokenType::Star:
-			push(builder_.CreateMul(l, r, "multmp"));
+			return create_codegen_result(builder_.CreateMul(l->value, r->value, "multmp"));
 			break;
 		case TokenType::Divide: 
-			push(builder_.CreateSDiv(l, r, "divtmp"));
+			return create_codegen_result(builder_.CreateSDiv(l->value, r->value, "divtmp"));
 			break;
 		default: 
 			throw TinyException("CodeGen::visit -> BinaryOperator -> default");
 		}
 	}
 
-	void CodeGen::visit(Identifier* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(Identifier* node)
 	{
+		return nullptr;
 	}
 
-	void CodeGen::visit(IntLiteral* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(IntLiteral* node)
 	{
-		push(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, node->value, true)));
+		return create_codegen_result(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, node->value, true)));
 	}
 
-	void CodeGen::visit(RetDeclaration* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(RetDeclaration* node)
 	{
-		node->expression->accept(this);
-
-		builder_.CreateRet(pop());
+		auto r = node->expression->codegen(this);
+		builder_.CreateRet(r->value);
+		return nullptr;
 	}
 
-	void CodeGen::visit(CallExp* node)
+	std::unique_ptr<CodegenResult> CodeGen::visit(CallExp* node)
 	{
-
+		return nullptr;
 	}
 
 	std::unique_ptr<llvm::Module> CodeGen::execute(AST* ast)
@@ -104,16 +115,9 @@ namespace tiny {
 		return std::move(module_);
 	}
 
-	void CodeGen::push(llvm::Value* v)
+	std::unique_ptr<CodegenResult> CodeGen::create_codegen_result(llvm::Value* v)
 	{
-		value_stack_.push(v);
-	}
-
-	llvm::Value* CodeGen::pop()
-	{
-		auto v = value_stack_.top();
-		value_stack_.pop();
-		return v;
+		return std::make_unique<CodegenResult>(v);
 	}
 
 	llvm::Type* CodeGen::get_llvm_type(const TinyType* type)

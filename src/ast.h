@@ -5,13 +5,8 @@
 
 #include "type.h"
 #include "token.h"
-#include "ast_visitor.h"
+#include "codegen.h"
 #include "symbols.h"
-
-#define VISIT(visitor) \
-	visitor->parents.push(this); \
-	visitor->visit(this); \
-	visitor->parents.pop(); \
 
 namespace tiny {
 
@@ -37,7 +32,7 @@ namespace tiny {
 		}
 
 		virtual NodeType node_type() = 0;
-		virtual void accept(ASTVisitor* visitor) = 0;
+		virtual std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) = 0;
 
 		std::unique_ptr<TinyType> type;
 	};
@@ -54,10 +49,12 @@ namespace tiny {
 
 		std::vector<std::unique_ptr<ASTNode>> nodes;
 
-		void accept(ASTVisitor* visitor)
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor)
 		{
 			for (auto& n : nodes)
-				n->accept(visitor);
+				n->codegen(visitor);
+
+			return nullptr;
 		}
 	};
 
@@ -72,8 +69,9 @@ namespace tiny {
 			return NodeType::ArgDeclaration;
 		}
 
-		void accept(ASTVisitor* visitor) override
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
+			return visitor->visit(this);
 		}
 	};
 
@@ -93,9 +91,9 @@ namespace tiny {
 			return NodeType::FnDeclaration;
 		}
 
-		void accept(ASTVisitor* visitor) override 
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 
@@ -111,9 +109,9 @@ namespace tiny {
 			return NodeType::CallExp;
 		}
 
-		void accept(ASTVisitor* visitor) override
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 
@@ -129,9 +127,9 @@ namespace tiny {
 			return NodeType::VarDeclaration;
 		}
 
-		void accept(ASTVisitor* visitor) override 
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 
@@ -145,9 +143,9 @@ namespace tiny {
 			return NodeType::RetDeclaration;
 		}
 
-		void accept(ASTVisitor* visitor) override
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 
@@ -163,9 +161,9 @@ namespace tiny {
 			return NodeType::BinaryOperator;
 		}
 
-		void accept(ASTVisitor* visitor) override 
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 
@@ -180,9 +178,9 @@ namespace tiny {
 			return NodeType::Identifier;
 		}
 
-		void accept(ASTVisitor* visitor) override 
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 
@@ -197,9 +195,9 @@ namespace tiny {
 			return NodeType::IntLiteral;
 		}
 
-		void accept(ASTVisitor* visitor) override 
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
 		{
-			VISIT(visitor)
+			return visitor->visit(this);
 		}
 	};
 

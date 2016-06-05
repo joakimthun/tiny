@@ -53,9 +53,6 @@
     <ClInclude Include="ast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ast_visitor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="parsers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
