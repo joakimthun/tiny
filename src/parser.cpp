@@ -33,9 +33,14 @@ namespace tiny {
 
 	std::unique_ptr<ASTNode> Parser::parse_global()
 	{
-		auto parser = get_global_parser(current_token_->type);
-		if(parser == nullptr)
-			throw_unexpected_token();
+		auto parser = get_global_ll2_parser(current_token_->type, peek()->type);
+
+		if (parser == nullptr)
+		{
+			parser = get_global_parser(current_token_->type);
+			if (parser == nullptr)
+				throw_unexpected_token();
+		}
 
 		return parser(this);
 	}
@@ -163,6 +168,11 @@ namespace tiny {
 		ll2_parsers_.push_back(LL2ParserEntry{ t1, t2, handler });
 	}
 
+	void Parser::register_global_ll2_parser(TokenType t1, TokenType t2, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler)
+	{
+		global_ll2_parsers_.push_back(LL2ParserEntry{ t1, t2, handler });
+	}
+
 	void Parser::register_infix_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser, std::unique_ptr<ASTNode> left)> handler)
 	{
 		infix_parsers_.insert(std::make_pair(type, handler));
@@ -174,6 +184,17 @@ namespace tiny {
 		if (it != global_parsers_.end())
 		{
 			return it->second;
+		}
+
+		return nullptr;
+	}
+
+	std::function<std::unique_ptr<ASTNode>(Parser*)> Parser::get_global_ll2_parser(TokenType t1, TokenType t2)
+	{
+		for (auto& e : global_ll2_parsers_)
+		{
+			if (e.t1 == t1 && e.t2 == t2)
+				return e.parser;
 		}
 
 		return nullptr;
@@ -220,6 +241,9 @@ namespace tiny {
 		register_global_parser(TokenType::Fn, parse_fn_declaration);
 		register_global_parser(TokenType::Ext, parse_fn_declaration);
 
+		// Global LL2 parsers
+		//register_global_ll2_parser(TokenType::Id, TokenType::ShortDec, parse_short_dec);
+
 		// LL2 parsers
 		register_ll2_parser(TokenType::Id, TokenType::ShortDec, parse_short_dec);
 		register_ll2_parser(TokenType::Id, TokenType::LParen, parse_call);
@@ -228,6 +252,7 @@ namespace tiny {
 		register_parser(TokenType::LParen, parse_grouped_expression);
 		register_parser(TokenType::Id, parse_id);
 		register_parser(TokenType::IntLiteral, parse_literal);
+		register_parser(TokenType::StringLiteral, parse_literal);
 		register_parser(TokenType::Ret, parse_ret_dec);
 
 		// Infix parsers

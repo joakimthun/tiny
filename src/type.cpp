@@ -24,6 +24,8 @@ namespace tiny {
 			return "i8";
 		case Type::I8Ptr:
 			return "i8Ptr";
+		case Type::StringLit:
+			return "String literal";
 		default: 
 			throw TinyException("get_type_name -> default case");
 		}
@@ -40,6 +42,8 @@ namespace tiny {
 			return std::make_unique<TinyType>(pointer ? Type::I32Ptr : Type::I32);
 		case TokenType::I8:
 			return std::make_unique<TinyType>(pointer ? Type::I8Ptr : Type::I8);
+		case TokenType::StringLiteral:
+			return std::make_unique<TinyType>(Type::StringLit);
 		default:
 			throw TinyException("get_type_from_token -> default case");
 		}

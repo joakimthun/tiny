@@ -60,6 +60,12 @@ namespace tiny {
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(VarDeclaration* node)
 	{
+		if (node->expression->node_type() == NodeType::StringLiteral)
+		{
+			auto str = static_cast<StringLiteral*>(node->expression.get());
+			return create_codegen_result(builder_.CreateGlobalStringPtr(str->value, node->name));
+		}
+
 		return nullptr;
 	}
 
@@ -95,6 +101,11 @@ namespace tiny {
 	std::unique_ptr<CodegenResult> CodeGen::visit(IntLiteral* node)
 	{
 		return create_codegen_result(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, node->value, true)));
+	}
+
+	std::unique_ptr<CodegenResult> CodeGen::visit(StringLiteral* node)
+	{
+		return create_codegen_result(builder_.CreateGlobalStringPtr(node->value));
 	}
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(RetDeclaration* node)

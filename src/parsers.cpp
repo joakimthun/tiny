@@ -91,6 +91,10 @@ namespace tiny {
 			parser->consume(TokenType::IntLiteral);
 			return std::make_unique<IntLiteral>(std::stoi(value));
 		}
+		case TokenType::StringLiteral: {
+			parser->consume(TokenType::StringLiteral);
+			return std::make_unique<StringLiteral>(value);
+		}
 		default:
 			throw TinyException("Unexpected literal -> parse_literal");
 		}
@@ -134,8 +138,9 @@ namespace tiny {
 		parser->consume(TokenType::ShortDec);
 
 		auto exp = parser->parse_expression();
+		auto type = exp->type->type;
 
-		return parse_dec(parser, name, std::make_unique<TinyType>(exp->type->type), std::move(exp));
+		return parse_dec(parser, name, std::make_unique<TinyType>(type), std::move(exp));
 	}
 
 	std::unique_ptr<ASTNode> parse_explicit_dec(Parser* parser)
@@ -165,6 +170,7 @@ namespace tiny {
 	std::unique_ptr<ASTNode> parse_call(Parser* parser)
 	{
 		auto name = parser->current()->value;
+
 		parser->consume(TokenType::Id);
 		parser->consume(TokenType::LParen);
 

@@ -30,6 +30,7 @@ namespace tiny {
 		I32Ptr,
 		I8,
 		I8Ptr,
+		StringLit
 	};
 
 	std::string get_type_name(Type t);

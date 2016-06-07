@@ -46,8 +46,10 @@ namespace tiny {
 		void register_global_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler);
 		void register_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler);
 		void register_ll2_parser(TokenType t1, TokenType t2, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler);
+		void register_global_ll2_parser(TokenType t1, TokenType t2, std::function<std::unique_ptr<ASTNode>(Parser* parser)> handler);
 		void register_infix_parser(TokenType type, std::function<std::unique_ptr<ASTNode>(Parser* parser, std::unique_ptr<ASTNode> left)> handler);
 		std::function<std::unique_ptr<ASTNode>(Parser*)> get_global_parser(TokenType type);
+		std::function<std::unique_ptr<ASTNode>(Parser*)> get_global_ll2_parser(TokenType t1, TokenType t2);
 		std::function<std::unique_ptr<ASTNode>(Parser*)> get_parser(TokenType type);
 		std::function<std::unique_ptr<ASTNode>(Parser*)> get_ll2_parser(TokenType t1, TokenType t2);
 		std::function<std::unique_ptr<ASTNode>(Parser*, std::unique_ptr<ASTNode>)> get_infix_parser(TokenType type);
@@ -58,6 +60,7 @@ namespace tiny {
 		std::unique_ptr<Lexer> lexer_;
 		std::stack<SymbolTable*> scopes_;
 		std::unordered_map<TokenType, std::function<std::unique_ptr<ASTNode>(Parser*)>> global_parsers_;
+		std::vector<LL2ParserEntry> global_ll2_parsers_;
 		std::unordered_map<TokenType, std::function<std::unique_ptr<ASTNode>(Parser*)>> parsers_;
 		std::vector<LL2ParserEntry> ll2_parsers_;
 		std::unordered_map<TokenType, std::function<std::unique_ptr<ASTNode>(Parser*, std::unique_ptr<ASTNode>)>> infix_parsers_;

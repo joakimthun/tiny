@@ -19,6 +19,7 @@ namespace tiny {
 		std::unique_ptr<Token> next();
 		const Token* peek();
 	private:
+		std::unique_ptr<Token> string();
 		std::unique_ptr<Token> alpha();
 		std::unique_ptr<Token> digit();
 		std::unique_ptr<Token> try_match_tokens(char first, char second, TokenType type);

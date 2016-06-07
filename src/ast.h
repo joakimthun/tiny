@@ -16,6 +16,7 @@ namespace tiny {
 		ArgDeclaration,
 		VarDeclaration,
 		IntLiteral,
+		StringLiteral,
 		BinaryOperator,
 		Identifier,
 		RetDeclaration,
@@ -193,6 +194,23 @@ namespace tiny {
 		NodeType node_type() override
 		{
 			return NodeType::IntLiteral;
+		}
+
+		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override
+		{
+			return visitor->visit(this);
+		}
+	};
+
+	struct StringLiteral : ASTNode
+	{
+		StringLiteral(const std::string& v) : ASTNode(std::make_unique<TinyType>(Type::I32)), value(v) {}
+
+		std::string value;
+
+		NodeType node_type() override
+		{
+			return NodeType::StringLiteral;
 		}
 
 		std::unique_ptr<CodegenResult> codegen(CodeGen* visitor) override

@@ -16,6 +16,7 @@ namespace tiny {
 	struct BinaryOperator;
 	struct Identifier;
 	struct IntLiteral;
+	struct StringLiteral;
 	struct RetDeclaration;
 	struct CallExp;
 	struct ArgDeclaration;
@@ -38,6 +39,7 @@ namespace tiny {
 		std::unique_ptr<CodegenResult> visit(BinaryOperator* node);
 		std::unique_ptr<CodegenResult> visit(Identifier* node);
 		std::unique_ptr<CodegenResult> visit(IntLiteral* node);
+		std::unique_ptr<CodegenResult> visit(StringLiteral* node);
 		std::unique_ptr<CodegenResult> visit(RetDeclaration* node);
 		std::unique_ptr<CodegenResult> visit(CallExp* node);
 

@@ -55,6 +55,8 @@ namespace tiny {
 
 			switch (current_)
 			{
+			case '"':
+				return string();
 			case '+':
 				return create(TokenType::Plus, "+");
 			case '-': {
@@ -101,6 +103,23 @@ namespace tiny {
 	{
 		buffer_.push(next());
 		return buffer_.back().get();
+	}
+
+	std::unique_ptr<Token> Lexer::string()
+	{
+		std::string value;
+		u32 start = column_;
+		consume();
+
+		while (current_ != -1 && current_ != L'"')
+		{
+			value += current_;
+			consume();
+		}
+
+		consume();
+
+		return std::make_unique<Token>(TokenType::StringLiteral, value, path_, line_number_, start, start + (value.size() - 1));
 	}
 
 	std::unique_ptr<Token> Lexer::alpha()
