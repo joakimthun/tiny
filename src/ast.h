@@ -40,8 +40,8 @@ namespace tiny {
 
 	struct Scope
 	{
-		Scope(SymbolTable* parent) : symbol_table_(std::make_unique<SymbolTable>(parent)) {}
-		std::unique_ptr<SymbolTable> symbol_table_;
+		Scope(SymbolTable<TinyType>* parent) : symbol_table_(std::make_unique<SymbolTable<TinyType>>(parent)) {}
+		std::unique_ptr<SymbolTable<TinyType>> symbol_table_;
 	};
 
 	struct AST : Scope
@@ -78,7 +78,7 @@ namespace tiny {
 
 	struct FnDeclaration : ASTNode, Scope
 	{
-		FnDeclaration(SymbolTable* parent, bool ext) : ASTNode(std::make_unique<TinyType>(Type::Fn)), Scope(parent), entry_point(false), external(ext) {}
+		FnDeclaration(SymbolTable<TinyType>* parent, bool ext) : ASTNode(std::make_unique<TinyType>(Type::Fn)), Scope(parent), entry_point(false), external(ext) {}
 
 		std::string name;
 		bool entry_point;

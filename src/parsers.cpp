@@ -75,7 +75,7 @@ namespace tiny {
 		if (parser->current_scope()->has_entry(name))
 		{
 			auto entry = parser->current_scope()->get_entry(name);
-			return std::make_unique<Identifier>(name, std::make_unique<TinyType>(entry->type->type));
+			return std::make_unique<Identifier>(name, std::make_unique<TinyType>(entry->value->type));
 		}
 
 		parser->register_error("Unknown identifier '" + name + "', line: " + std::to_string(parser->current()->line_number));
@@ -180,7 +180,7 @@ namespace tiny {
 		if (fn == nullptr)
 			parser->register_error("The function '" + name + "' has not been defined, Line: " + std::to_string(parser->current()->line_number));
 		else
-			return_type = std::make_unique<TinyType>(fn->type->type);
+			return_type = std::make_unique<TinyType>(fn->value->type);
 
 		auto exp = std::make_unique<CallExp>(std::move(return_type));
 

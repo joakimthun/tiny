@@ -35,9 +35,9 @@ namespace tiny {
 		const Token* current() const;
 		const Token* peek() const;
 		void register_error(const std::string& msg);
-		void push_scope(SymbolTable* scope);
+		void push_scope(SymbolTable<TinyType>* scope);
 		void pop_scope();
-		SymbolTable* current_scope();
+		SymbolTable<TinyType>* current_scope();
 
 	private:
 		void throw_if_has_errors() const;
@@ -58,7 +58,7 @@ namespace tiny {
 
 		std::unique_ptr<Token> current_token_;
 		std::unique_ptr<Lexer> lexer_;
-		std::stack<SymbolTable*> scopes_;
+		std::stack<SymbolTable<TinyType>*> scopes_;
 		std::unordered_map<TokenType, std::function<std::unique_ptr<ASTNode>(Parser*)>> global_parsers_;
 		std::vector<LL2ParserEntry> global_ll2_parsers_;
 		std::unordered_map<TokenType, std::function<std::unique_ptr<ASTNode>(Parser*)>> parsers_;

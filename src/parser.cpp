@@ -118,7 +118,7 @@ namespace tiny {
 		}
 	}
 
-	void Parser::push_scope(SymbolTable* scope)
+	void Parser::push_scope(SymbolTable<TinyType>* scope)
 	{
 		scopes_.push(scope);
 	}
@@ -128,7 +128,7 @@ namespace tiny {
 		scopes_.pop();
 	}
 
-	SymbolTable* Parser::current_scope()
+	SymbolTable<TinyType>* Parser::current_scope()
 	{
 		return scopes_.top();
 	}

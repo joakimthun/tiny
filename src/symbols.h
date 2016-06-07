@@ -2,17 +2,17 @@
 
 #include <unordered_map>
 
-#include "type.h"
-
 namespace tiny {
 
+	template<class TValue>
 	struct Symbol
 	{
-		Symbol(const std::string& n, std::unique_ptr<TinyType> t) : name(n), type(std::move(t)) {}
+		Symbol(const std::string& n, std::unique_ptr<TValue> v) : name(n), value(std::move(v)) {}
 		std::string name;
-		std::unique_ptr<TinyType> type;
+		std::unique_ptr<TValue> value;
 	};
 
+	template<class TValue>
 	class SymbolTable
 	{
 	public:
@@ -32,7 +32,7 @@ namespace tiny {
 			return false;
 		}
 
-		const Symbol* get_entry(const std::string& name) const
+		const Symbol<TValue>* get_entry(const std::string& name) const
 		{
 			auto it = symbols_.find(name);
 			if (it != symbols_.end())
@@ -46,22 +46,21 @@ namespace tiny {
 			return nullptr;
 		}
 
-		void add_entry(const std::string& name, std::unique_ptr<TinyType> type)
+		void add_entry(const std::string& name, std::unique_ptr<TValue> v)
 		{
-			symbols_.insert(std::make_pair(name, std::make_unique<Symbol>(name, std::move(type))));
 		}
 
-		void add_root_entry(const std::string& name, std::unique_ptr<TinyType> type)
+		void add_root_entry(const std::string& name, std::unique_ptr<TValue> v)
 		{
 			if (parent_ != nullptr)
-				return parent_->add_root_entry(name, std::move(type));
+				return parent_->add_root_entry(name, std::move(v));
 
-			add_entry(name, std::move(type));
+			add_entry(name, std::move(v));
 		}
 
 	private:
 		SymbolTable* parent_;
-		std::unordered_map<std::string, std::unique_ptr<Symbol>> symbols_;
+		std::unordered_map<std::string, std::unique_ptr<Symbol<TValue>>> symbols_;
 	};
 
 }
