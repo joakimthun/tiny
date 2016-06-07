@@ -100,7 +100,7 @@ namespace tiny {
 
 	struct CallExp : ASTNode
 	{
-		CallExp(std::unique_ptr<TinyType> t) : ASTNode(std::move(t)) {}
+		CallExp(const std::string& n, std::unique_ptr<TinyType> t) : ASTNode(std::move(t)), name(n) {}
 
 		std::string name;
 		std::vector<std::unique_ptr<ASTNode>> args;
@@ -204,7 +204,7 @@ namespace tiny {
 
 	struct StringLiteral : ASTNode
 	{
-		StringLiteral(const std::string& v) : ASTNode(std::make_unique<TinyType>(Type::I32)), value(v) {}
+		StringLiteral(const std::string& v) : ASTNode(std::make_unique<TinyType>(Type::I8Ptr)), value(v) {}
 
 		std::string value;
 

@@ -36,10 +36,12 @@ namespace tiny {
 		auto ft = llvm::FunctionType::get(get_llvm_type(node->return_type.get()), args, false);
 		auto f = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, node->name, module_.get());
 
-		if(node->external)
+		if (node->external)
 		{
 			return nullptr;
 		}
+		
+		push_scope(std::make_unique<SymbolTable<LLVMSymbol>>(nullptr));
 		
 		auto bb = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entryblock", f);
 		builder_.SetInsertPoint(bb);
@@ -48,8 +50,11 @@ namespace tiny {
 		{
 			auto r = n->codegen(this);
 		}
-		
+
 		llvm::verifyFunction(*f);
+
+		pop_scope();
+
 		return nullptr;
 	}
 
@@ -60,13 +65,13 @@ namespace tiny {
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(VarDeclaration* node)
 	{
-		if (node->expression->node_type() == NodeType::StringLiteral)
-		{
-			auto str = static_cast<StringLiteral*>(node->expression.get());
-			return create_codegen_result(builder_.CreateGlobalStringPtr(str->value, node->name));
-		}
+		auto f = builder_.GetInsertBlock()->getParent();
+		auto exp_result = node->expression->codegen(this);
+		auto alloca = create_alloca(f, node->name, get_llvm_type(node->type.get()));
 
-		return nullptr;
+		current_scope()->add_entry(node->name, std::make_unique<LLVMSymbol>(_alloca, node->type->type));
+
+		return create_codegen_result(builder_.CreateStore(exp_result->value, alloca));
 	}
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(BinaryOperator* node)
@@ -95,7 +100,8 @@ namespace tiny {
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(Identifier* node)
 	{
-		return nullptr;
+		auto entry = current_scope()->get_entry(node->name);
+		return create_codegen_result(builder_.CreateLoad(entry->value->value, node->name));
 	}
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(IntLiteral* node)
@@ -117,7 +123,16 @@ namespace tiny {
 
 	std::unique_ptr<CodegenResult> CodeGen::visit(CallExp* node)
 	{
-		return nullptr;
+		auto callee = get_function(node->name);
+		
+		std::vector<llvm::Value*> args;
+		for (auto& arg : node->args)
+		{
+			auto arg_result = arg->codegen(this);
+			args.push_back(arg_result->value);
+		}
+		
+		return create_codegen_result(builder_.CreateCall(callee, args, "calltmp"));
 	}
 
 	std::unique_ptr<llvm::Module> CodeGen::execute(AST* ast)
@@ -126,7 +141,33 @@ namespace tiny {
 		return std::move(module_);
 	}
 
-	std::unique_ptr<CodegenResult> CodeGen::create_codegen_result(llvm::Value* v)
+	llvm::AllocaInst* CodeGen::create_alloca(llvm::Function* function, const std::string& name, llvm::Type* type)
+	{
+		auto b = llvm::IRBuilder<>(&function->getEntryBlock(), function->getEntryBlock().begin());
+		return b.CreateAlloca(type, nullptr, name);
+	}
+
+	llvm::Function* CodeGen::get_function(const std::string& name) const
+	{
+		return module_->getFunction(name);
+	}
+
+	void CodeGen::push_scope(std::unique_ptr<SymbolTable<LLVMSymbol>> scope)
+	{
+		scopes_.push(std::move(scope));
+	}
+
+	void CodeGen::pop_scope()
+	{
+		scopes_.pop();
+	}
+
+	SymbolTable<LLVMSymbol>* CodeGen::current_scope()
+	{
+		return scopes_.top().get();
+	}
+
+	std::unique_ptr<CodegenResult> CodeGen::create_codegen_result(llvm::Value* v) const
 	{
 		return std::make_unique<CodegenResult>(v);
 	}

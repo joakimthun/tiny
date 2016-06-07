@@ -2,5 +2,8 @@ ext fn puts(c i8*) -> i32
 
 fn main() -> i32 {
 	str := "Hello World!"
-	ret 22 * 10 / 2 + 5
+	x := 10
+	y := x + 20
+
+	ret y
 }

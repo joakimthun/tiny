@@ -182,7 +182,7 @@ namespace tiny {
 		else
 			return_type = std::make_unique<TinyType>(fn->value->type);
 
-		auto exp = std::make_unique<CallExp>(std::move(return_type));
+		auto exp = std::make_unique<CallExp>(name, std::move(return_type));
 
 		while(parser->current()->type != TokenType::RParen)
 		{

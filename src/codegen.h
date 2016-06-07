@@ -3,6 +3,7 @@
 #include <stack>
 
 #include "type.h"
+#include "symbols.h"
 
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Module.h"
@@ -27,7 +28,12 @@ namespace tiny {
 		llvm::Value* value;
 	};
 
-
+	struct LLVMSymbol
+	{
+		LLVMSymbol(llvm::AllocaInst* v, Type t) : value(v), type(std::make_unique<TinyType>(t)) {}
+		llvm::AllocaInst* value;
+		std::unique_ptr<TinyType> type;
+	};
 
 	class CodeGen
 	{
@@ -48,12 +54,20 @@ namespace tiny {
 		std::unique_ptr<llvm::Module> execute(AST* ast);
 
 	private:
-		std::unique_ptr<CodegenResult> create_codegen_result(llvm::Value* v);
+		static llvm::AllocaInst* create_alloca(llvm::Function* function, const std::string& name, llvm::Type* type);
+		llvm::Function* get_function(const std::string& name) const;
+
+		void push_scope(std::unique_ptr<SymbolTable<LLVMSymbol>> scope);
+		void pop_scope();
+		SymbolTable<LLVMSymbol>* current_scope();
+
+		std::unique_ptr<CodegenResult> create_codegen_result(llvm::Value* v) const;
 
 		static llvm::Type* get_llvm_type(const TinyType* type);
 
 		std::unique_ptr<llvm::Module> module_;
 		llvm::IRBuilder<> builder_;
+		std::stack<std::unique_ptr<SymbolTable<LLVMSymbol>>> scopes_;
 	};
 
 }
