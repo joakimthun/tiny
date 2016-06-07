@@ -45,6 +45,17 @@ namespace tiny {
 		
 		auto bb = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entryblock", f);
 		builder_.SetInsertPoint(bb);
+
+		auto i = 0;
+		for (auto& arg : f->args())
+		{
+			// Set the argument name to get a little bit more readable IR
+			arg.setName(node->args[i++]->name);
+
+			auto alloca = create_alloca(f, arg.getName(), arg.getType());
+			auto inst = builder_.CreateStore(&arg, alloca);
+			current_scope()->add_entry(arg.getName(), std::make_unique<LLVMSymbol>(alloca, get_type(arg.getType())));
+		}
 		
 		for (auto& n : node->body)
 		{
@@ -69,7 +80,7 @@ namespace tiny {
 		auto exp_result = node->expression->codegen(this);
 		auto alloca = create_alloca(f, node->name, get_llvm_type(node->type.get()));
 
-		current_scope()->add_entry(node->name, std::make_unique<LLVMSymbol>(_alloca, node->type->type));
+		current_scope()->add_entry(node->name, std::make_unique<LLVMSymbol>(alloca, node->type->type));
 
 		return create_codegen_result(builder_.CreateStore(exp_result->value, alloca));
 	}
@@ -187,5 +198,26 @@ namespace tiny {
 		default: 
 			throw TinyException("Default case --> CodeGen::get_llvm_type");
 		}
+	}
+
+	std::unique_ptr<TinyType> CodeGen::get_type(const llvm::Type* type)
+	{
+		if(type->isIntegerTy(32))
+		{
+			if (type->isPointerTy())
+				return std::make_unique<TinyType>(Type::I32Ptr);
+
+			return std::make_unique<TinyType>(Type::I32);
+		}
+
+		if (type->isIntegerTy(8))
+		{
+			if (type->isPointerTy())
+				return std::make_unique<TinyType>(Type::I8Ptr);
+
+			return std::make_unique<TinyType>(Type::I8);
+		}
+
+		throw TinyException("Default case --> CodeGen::get_type");
 	}
 }

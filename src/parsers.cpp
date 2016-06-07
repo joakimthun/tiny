@@ -34,9 +34,16 @@ namespace tiny {
 
 			auto pointer = parser->consume_ptr();
 			auto arg_type = get_type_from_token(arg_type_token, pointer);
-			
 
+			if (parser->current_scope()->has_entry(arg_name))
+				parser->register_error("An argument with the name '" + arg_name + "' already exists in the current scope, Line: " + std::to_string(parser->current()->line_number));
+			else
+				parser->current_scope()->add_entry(arg_name, std::make_unique<TinyType>(arg_type->type));
+			
 			fn->args.push_back(std::make_unique<ArgDeclaration>(arg_name, std::move(arg_type)));
+
+			if(parser->current()->type == TokenType::Comma)
+				parser->consume(TokenType::Comma);
 		}
 
 		parser->consume(TokenType::RParen);
@@ -48,7 +55,7 @@ namespace tiny {
 		auto pointer = parser->consume_ptr();
 		fn->return_type = get_type_from_token(return_type_token, pointer);
 
-		parser->current_scope()->add_root_entry(name, std::make_unique<TinyType>(Type::Fn));
+		parser->current_scope()->add_root_entry(name, std::make_unique<TinyType>(fn->return_type->type));
 
 		if(ext)
 			return std::move(fn);

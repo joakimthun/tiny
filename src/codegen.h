@@ -31,7 +31,8 @@ namespace tiny {
 	struct LLVMSymbol
 	{
 		LLVMSymbol(llvm::AllocaInst* v, Type t) : value(v), type(std::make_unique<TinyType>(t)) {}
-		llvm::AllocaInst* value;
+		LLVMSymbol(llvm::AllocaInst* v, std::unique_ptr<TinyType> t) : value(v), type(std::move(t)) {}
+		llvm::AllocaInst * value;
 		std::unique_ptr<TinyType> type;
 	};
 
@@ -64,6 +65,7 @@ namespace tiny {
 		std::unique_ptr<CodegenResult> create_codegen_result(llvm::Value* v) const;
 
 		static llvm::Type* get_llvm_type(const TinyType* type);
+		static std::unique_ptr<TinyType> get_type(const llvm::Type* type);
 
 		std::unique_ptr<llvm::Module> module_;
 		llvm::IRBuilder<> builder_;

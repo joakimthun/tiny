@@ -1,9 +1,12 @@
 ext fn puts(c i8*) -> i32
 
+fn add(x i32, y i32) -> i32 {
+	ret x + y
+}
+
 fn main() -> i32 {
 	str := "Hello World!"
-	x := 10
-	y := x + 20
+	x := add(10, 10)
 
-	ret y
+	ret x + 10
 }
