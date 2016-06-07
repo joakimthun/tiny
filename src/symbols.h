@@ -48,6 +48,7 @@ namespace tiny {
 
 		void add_entry(const std::string& name, std::unique_ptr<TValue> v)
 		{
+			symbols_.insert(std::make_pair(name, std::make_unique<Symbol<TValue>>(name, std::move(v))));
 		}
 
 		void add_root_entry(const std::string& name, std::unique_ptr<TValue> v)
